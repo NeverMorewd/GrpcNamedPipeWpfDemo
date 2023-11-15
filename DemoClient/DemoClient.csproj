@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows10.0.17763.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>False</UseWindowsForms>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="ServiceCommand\ClientStreamingService.cs" />
+    <Compile Remove="ServiceCommand\ServerStreamingService.cs" />
+    <Compile Remove="ServiceCommand\UnaryService.cs" />
+    <Compile Remove="ServiceFacades\BaseServiceFacade.cs" />
+    <Compile Remove="ServiceFacades\ClientStreamingService.cs" />
+    <Compile Remove="ServiceFacades\ServerStreamingService.cs" />
+    <Compile Remove="ServiceFacades\UnaryService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="lemon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE" Link="LICENSE" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
+    <PackageReference Include="MethodTimer.Fody" Version="3.2.2" />
+    <PackageReference Include="Polly" Version="8.1.0" />
+    <PackageReference Include="ReactiveUI" Version="19.5.1" />
+    <PackageReference Include="ReactiveUI.Fody" Version="19.5.1" />
+    <PackageReference Include="ReactiveUI.WPF" Version="19.5.1" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DemoProto\DemoProto.csproj" />
+    <ProjectReference Include="..\GrpcDotNetNamedPipes\GrpcDotNetNamedPipes.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="lemon.ico" />
+  </ItemGroup>
+
+</Project>

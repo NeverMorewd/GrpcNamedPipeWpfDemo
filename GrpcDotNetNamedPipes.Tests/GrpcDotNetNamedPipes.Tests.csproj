@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('Windows'))">net6;net462</TargetFrameworks>
+        <TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('Windows'))">net6</TargetFrameworks>
+        <LangVersion>11</LangVersion>
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>../GrpcDotNetNamedPipes/public_signing_key.snk</AssemblyOriginatorKeyFile>
+        <TargetFrameworks>net6</TargetFrameworks>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Google.Protobuf" Version="3.21.9" />
+        <PackageReference Include="Grpc" Version="2.46.5" />
+        <PackageReference Include="Grpc.Core.Api" Version="2.49.0" />
+        <PackageReference Include="Grpc.Tools" Version="2.50.0" PrivateAssets="All" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
+        <PackageReference Include="System.IO.Pipes.AccessControl" Version="5.0.0" />
+        <PackageReference Include="xunit" Version="2.4.1" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Protobuf Include="**/*.proto" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\GrpcDotNetNamedPipes\GrpcDotNetNamedPipes.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="System" />
+        <Using Include="System.Buffers" />
+        <Using Include="System.Collections.Generic" />
+        <Using Include="System.Diagnostics" />
+        <Using Include="System.IO" />
+        <Using Include="System.IO.Pipes" />
+        <Using Include="System.Linq" />
+        <Using Include="System.Threading" />
+        <Using Include="System.Threading.Tasks" />
+        <Using Include="Grpc.Core" />
+        <Using Include="GrpcDotNetNamedPipes.Tests" />
+        <Using Include="GrpcDotNetNamedPipes.Tests.Generated" />
+        <Using Include="GrpcDotNetNamedPipes.Tests.Helpers" />
+        <Using Include="Xunit" />
+        <Using Include="Xunit.Abstractions" />
+    </ItemGroup>
+
+</Project>

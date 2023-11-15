@@ -1,0 +1,540 @@
+﻿<rxui:ReactiveWindow
+    x:Class="DemoClient.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:common="clr-namespace:DemoClient.Common"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:DemoClient"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="clr-namespace:DemoClient.Models"
+    xmlns:mvvm="clr-namespace:DemoClient.Mvvm"
+    xmlns:rxui="http://reactiveui.net"
+    Title="GrpcIPCClientDemo"
+    Width="920"
+    Height="550"
+    x:TypeArguments="local:AppViewModel"
+    Icon="lemon.ico"
+    mc:Ignorable="d">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.CheckBox.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ListBox.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.RadioButton.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.TextBlock.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <SolidColorBrush x:Key="LightRedBrush" Color="#EE6A50" />
+            <Style x:Key="GridViewColumnHeaderStyle" TargetType="{x:Type GridViewColumnHeader}">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="HorizontalContentAlignment" Value="Left" />
+                <Setter Property="IsEnabled" Value="True" />
+                <Setter Property="Foreground" Value="#848A90" />
+                <Setter Property="Padding" Value="0,0,0,0" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type GridViewColumnHeader}">
+                            <Grid SnapsToDevicePixels="True">
+                                <Border
+                                    x:Name="HeaderBorder"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition MaxHeight="7" />
+                                            <RowDefinition />
+                                        </Grid.RowDefinitions>
+                                        <Border Grid.RowSpan="2" Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter
+                                                x:Name="HeaderContent"
+                                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                Content="{TemplateBinding Content}"
+                                                ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                RecognizesAccessKey="True"
+                                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                                TextBlock.Foreground="{TemplateBinding Foreground}" />
+                                        </Border>
+                                    </Grid>
+                                </Border>
+                                <Canvas>
+                                    <Thumb x:Name="PART_HeaderGripper">
+                                        <Thumb.Style>
+                                            <Style TargetType="{x:Type Thumb}">
+                                                <Setter Property="Canvas.Right" Value="-9" />
+                                                <Setter Property="Width" Value="18" />
+                                                <Setter Property="Height" Value="{Binding ActualHeight, RelativeSource={RelativeSource TemplatedParent}}" />
+                                                <Setter Property="Padding" Value="0" />
+                                                <Setter Property="Background" Value="White" />
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="{x:Type Thumb}">
+                                                            <Border Padding="{TemplateBinding Padding}" Background="Transparent">
+                                                                <Rectangle
+                                                                    Width="1"
+                                                                    HorizontalAlignment="Center"
+                                                                    Fill="{TemplateBinding Background}" />
+                                                            </Border>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </Thumb.Style>
+                                    </Thumb>
+                                </Canvas>
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="HeaderBorder" Property="Background" Value="#FF866B" />
+                                    <Setter TargetName="PART_HeaderGripper" Property="Background" Value="Transparent" />
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="HeaderBorder" Property="Background" Value="#FF866B" />
+                                    <Setter TargetName="PART_HeaderGripper" Property="Visibility" Value="Hidden" />
+                                </Trigger>
+                                <Trigger Property="Height" Value="Auto">
+                                    <Setter Property="MinHeight" Value="25" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.99" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <DataTemplate x:Key="ListViewHeaderTemplate">
+                <DockPanel>
+                    <TextBlock MinWidth="110">
+                        <TextBlock.Text>
+                            <Binding />
+                        </TextBlock.Text>
+                    </TextBlock>
+                </DockPanel>
+            </DataTemplate>
+            <DataTemplate x:Key="ListViewResponseHeaderTemplate">
+                <DockPanel>
+                    <TextBlock MinWidth="500">
+                        <TextBlock.Text>
+                            <Binding />
+                        </TextBlock.Text>
+                    </TextBlock>
+                </DockPanel>
+            </DataTemplate>
+            <DataTemplate x:Key="StatusContentTemplate">
+                <StackPanel Orientation="Horizontal">
+                    <Grid x:Name="IconContent">
+                        <materialDesign:PackIcon
+                            x:Name="defaultIcon"
+                            Kind="DotsHorizontal"
+                            Visibility="Collapsed" />
+                        <materialDesign:PackIcon
+                            x:Name="requestingtIcon"
+                            Kind="DotsHorizontal"
+                            Visibility="Collapsed" />
+                        <ProgressBar
+                            x:Name="processingIcon"
+                            Width="16"
+                            Height="16"
+                            IsIndeterminate="True"
+                            Style="{StaticResource MaterialDesignCircularProgressBar}"
+                            Visibility="Collapsed"
+                            Value="50" />
+                        <materialDesign:PackIcon
+                            x:Name="stopIcon"
+                            Foreground="Yellow"
+                            Kind="AlertCircleOutline"
+                            Visibility="Collapsed" />
+                        <materialDesign:PackIcon
+                            x:Name="errorIcon"
+                            Foreground="Red"
+                            Kind="AlertCircleOutline"
+                            Visibility="Collapsed" />
+                        <materialDesign:PackIcon
+                            x:Name="doneIcon"
+                            Foreground="Green"
+                            Kind="CheckCircleOutline"
+                            Visibility="Collapsed" />
+                    </Grid>
+                    <TextBlock Margin="2,0,0,0" Text="{Binding Status}" />
+                </StackPanel>
+                <DataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding Status, UpdateSourceTrigger=PropertyChanged}" Value="{x:Static models:TrackStatusType.Requesting}">
+                        <Setter TargetName="requestingtIcon" Property="Visibility" Value="Visible" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Status, UpdateSourceTrigger=PropertyChanged}" Value="{x:Static models:TrackStatusType.Proceeding}">
+                        <Setter TargetName="processingIcon" Property="Visibility" Value="Visible" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Status, UpdateSourceTrigger=PropertyChanged}" Value="{x:Static models:TrackStatusType.Stop}">
+                        <Setter TargetName="stopIcon" Property="Visibility" Value="Visible" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Status, UpdateSourceTrigger=PropertyChanged}" Value="{x:Static models:TrackStatusType.Error}">
+                        <Setter TargetName="errorIcon" Property="Visibility" Value="Visible" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Status, UpdateSourceTrigger=PropertyChanged}" Value="{x:Static models:TrackStatusType.Done}">
+                        <Setter TargetName="doneIcon" Property="Visibility" Value="Visible" />
+                    </DataTrigger>
+                </DataTemplate.Triggers>
+            </DataTemplate>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid>
+        <TabControl Style="{StaticResource MaterialDesignFilledTabControl}" TabStripPlacement="Left">
+            <TabItem Header="Home">
+                <StackPanel>
+                    <GroupBox
+                        materialDesign:ElevationAssist.Elevation="Dp6"
+                        Background="White"
+                        Header="https://github.com/dotnet/wpf/issues/4362"
+                        Mouse.MouseDown="GroupBox_MouseDown"
+                        Style="{StaticResource MaterialDesignGroupBox}">
+                        <StackPanel Orientation="Vertical">
+                            <CheckBox Name="TestCheckBox" Content="IsChecked" />
+                            <Expander Name="TestExpander" Header="TestExpander">
+                                <TextBlock Text="Expand" />
+                            </Expander>
+                        </StackPanel>
+                    </GroupBox>
+                </StackPanel>
+            </TabItem>
+            <TabItem Header="Unary">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="70" />
+                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <StackPanel
+                        Grid.Row="0"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
+                        <TextBox
+                            x:Name="UnaryMessageTextBox"
+                            Width="300"
+                            VerticalContentAlignment="Center" />
+                        <Button
+                            Name="BeepUnaryButton"
+                            Margin="5"
+                            Content="BeepUnaryOnce" />
+                        <Button
+                            Name="UnaryClearButton"
+                            Margin="5"
+                            Background="{StaticResource LightRedBrush}"
+                            Content="Clear" />
+                        <ToggleButton
+                            Name="AutoScrollButton"
+                            Width="auto"
+                            Height="30"
+                            Margin="5,0,0,0"
+                            Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                            ToolTip="ScrollToBottom/Top" />
+                    </StackPanel>
+                    <Expander
+                        Grid.Row="1"
+                        Height="auto"
+                        Header="More Options">
+                        <StackPanel
+                            Height="70"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal">
+                            <TextBox
+                                Name="TimeoutTextBox"
+                                Width="100"
+                                Margin="0,0,5,0"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                VerticalContentAlignment="Bottom"
+                                materialDesign:HintAssist.Hint="Timeout(ms)"
+                                materialDesign:TextFieldAssist.HasClearButton="True"
+                                materialDesign:ValidationAssist.FontSize="12"
+                                materialDesign:ValidationAssist.OnlyShowOnFocus="True"
+                                materialDesign:ValidationAssist.PopupPlacement="Bottom"
+                                materialDesign:ValidationAssist.UsePopup="True"
+                                Style="{StaticResource MaterialDesignFloatingHintTextBox}" />
+                            <TextBox
+                                Name="ServerDelayTextBox"
+                                Width="110"
+                                Margin="0,0,5,0"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                VerticalContentAlignment="Bottom"
+                                materialDesign:HintAssist.Hint="ServerDelay(ms)"
+                                materialDesign:TextFieldAssist.HasClearButton="True"
+                                materialDesign:ValidationAssist.FontSize="12"
+                                materialDesign:ValidationAssist.OnlyShowOnFocus="True"
+                                materialDesign:ValidationAssist.PopupPlacement="Bottom"
+                                materialDesign:ValidationAssist.UsePopup="True"
+                                Style="{StaticResource MaterialDesignFloatingHintTextBox}" />
+                            <TextBlock VerticalAlignment="Center" Text="AsyncOptions：" />
+                            <ToggleButton
+                                Name="TaskOption"
+                                Width="auto"
+                                Height="30"
+                                Margin="5,0,0,0"
+                                Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                ToolTip="Default/LongRunning" />
+                            <TextBox
+                                Name="InternalTextBox"
+                                Width="120"
+                                Margin="5,0,5,0"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                VerticalContentAlignment="Bottom"
+                                materialDesign:HintAssist.Hint="AutoInternal(ms)"
+                                materialDesign:TextFieldAssist.HasClearButton="True"
+                                materialDesign:ValidationAssist.FontSize="12"
+                                materialDesign:ValidationAssist.OnlyShowOnFocus="True"
+                                materialDesign:ValidationAssist.PopupPlacement="Bottom"
+                                materialDesign:ValidationAssist.UsePopup="True"
+                                Style="{StaticResource MaterialDesignFloatingHintTextBox}" />
+                            <TextBlock VerticalAlignment="Center" Text="StartAutoUnary：" />
+                            <ToggleButton
+                                Name="StartAutoUnary"
+                                Width="auto"
+                                Height="30"
+                                Margin="5,0,0,0"
+                                Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                                ToolTip="StartAutoUnary" />
+                            <CheckBox
+                                Name="MutiClientCheckBox"
+                                materialDesign:CheckBoxAssist.CheckBoxSize="20"
+                                Content="MutiClient"
+                                IsChecked="False" />
+                        </StackPanel>
+                    </Expander>
+                    <ListView
+                        x:Name="UnaryTracks"
+                        Grid.Row="2"
+                        VerticalAlignment="Top"
+                        mvvm:GridViewSort.AutoSort="True"
+                        AlternationCount="2"
+                        FontSize="11"
+                        IsSynchronizedWithCurrentItem="True"
+                        ScrollViewer.CanContentScroll="True"
+                        SelectionMode="Single">
+                        <ListView.View>
+                            <GridView AllowsColumnReorder="true" ColumnHeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
+                                <GridViewColumn
+                                    Width="auto"
+                                    mvvm:GridViewSort.PropertyName="RequestTime"
+                                    DisplayMemberBinding="{Binding RequestTime}"
+                                    Header="Time"
+                                    HeaderTemplate="{StaticResource ListViewHeaderTemplate}" />
+                                <GridViewColumn
+                                    Width="auto"
+                                    mvvm:GridViewSort.PropertyName="Host"
+                                    DisplayMemberBinding="{Binding Host}"
+                                    Header="Host"
+                                    HeaderTemplate="{StaticResource ListViewHeaderTemplate}" />
+                                <GridViewColumn
+                                    Width="auto"
+                                    mvvm:GridViewSort.PropertyName="Request"
+                                    DisplayMemberBinding="{Binding Request}"
+                                    Header="Request"
+                                    HeaderTemplate="{StaticResource ListViewHeaderTemplate}" />
+
+                                <GridViewColumn
+                                    Width="auto"
+                                    mvvm:GridViewSort.PropertyName="Status"
+                                    CellTemplate="{StaticResource StatusContentTemplate}"
+                                    Header="Status"
+                                    HeaderTemplate="{StaticResource ListViewHeaderTemplate}" />
+                                <GridViewColumn
+                                    Width="auto"
+                                    mvvm:GridViewSort.PropertyName="StatusCode"
+                                    DisplayMemberBinding="{Binding StatusCode}"
+                                    Header="Code"
+                                    HeaderTemplate="{StaticResource ListViewHeaderTemplate}" />
+                                <GridViewColumn
+                                    Width="auto"
+                                    mvvm:GridViewSort.PropertyName="AllElapsed"
+                                    DisplayMemberBinding="{Binding AllElapsed}"
+                                    Header="Elapsed"
+                                    HeaderTemplate="{StaticResource ListViewHeaderTemplate}" />
+                                <GridViewColumn
+                                    Width="auto"
+                                    mvvm:GridViewSort.PropertyName="Response"
+                                    DisplayMemberBinding="{Binding Response}"
+                                    Header="Response"
+                                    HeaderTemplate="{StaticResource ListViewResponseHeaderTemplate}" />
+                                <!--<GridViewColumn
+                                    Width="auto"
+                                    mvvm:GridViewSort.PropertyName="Proto"
+                                    DisplayMemberBinding="{Binding Proto}"
+                                    Header="Proto"
+                                    HeaderTemplate="{StaticResource ListViewHeaderTemplate}" />-->
+
+                            </GridView>
+                        </ListView.View>
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="Height" Value="20" />
+                                <Style.Triggers>
+                                    <Trigger Property="ListView.AlternationIndex" Value="1">
+                                        <Setter Property="Background" Value="LightBlue" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                        <behaviors:Interaction.Behaviors>
+                            <mvvm:AutoScrollBehavior x:Name="AutoScrollBehavior" IsAutoScroll="{Binding ElementName=AutoScrollButton, Path=IsChecked}" />
+                        </behaviors:Interaction.Behaviors>
+
+                    </ListView>
+                </Grid>
+            </TabItem>
+            <TabItem Header="ClientStreaming">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="70" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                        <TextBlock VerticalAlignment="Center" Text="Start" />
+                        <ToggleButton
+                            Name="StartClientStreamingButton"
+                            Width="auto"
+                            Height="30"
+                            Margin="5,0,0,0"
+                            Style="{StaticResource MaterialDesignSwitchToggleButton}"
+                            ToolTip="MaterialDesignSwitchToggleButton with Custom Track Background" />
+                        <TextBox
+                            x:Name="ClientMessageTextBox"
+                            Width="300"
+                            VerticalContentAlignment="Center" />
+                        <materialDesign:Badged
+                            x:Name="CountingBadge"
+                            Margin="5"
+                            BadgeColorZoneMode="PrimaryDark">
+                            <Button
+                                Name="PushOnceButton"
+                                Content="PushOnce!"
+                                IsEnabled="{Binding ElementName=StartClientStreamingButton, Path=IsChecked}"
+                                Style="{StaticResource MaterialDesignRaisedLightButton}" />
+                        </materialDesign:Badged>
+                        <Button
+                            Name="ClientStreamingClearButton"
+                            Margin="5"
+                            Background="{StaticResource LightRedBrush}"
+                            Content="Clear" />
+                    </StackPanel>
+                    <ListBox
+                        x:Name="ClientTracks"
+                        Grid.Row="2"
+                        VerticalAlignment="Top">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding .}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <behaviors:Interaction.Behaviors>
+                            <mvvm:AutoScrollBehavior IsAutoScroll="True" />
+                        </behaviors:Interaction.Behaviors>
+                    </ListBox>
+                </Grid>
+            </TabItem>
+            <TabItem Header="ServerStreaming">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="70" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                        <TextBox
+                            Name="ServerStreamingDelayTextBox"
+                            Width="110"
+                            Margin="0,0,5,0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            VerticalContentAlignment="Bottom"
+                            materialDesign:HintAssist.Hint="ServerDelay(ms)"
+                            materialDesign:TextFieldAssist.HasClearButton="True"
+                            materialDesign:ValidationAssist.FontSize="12"
+                            materialDesign:ValidationAssist.OnlyShowOnFocus="True"
+                            materialDesign:ValidationAssist.PopupPlacement="Bottom"
+                            materialDesign:ValidationAssist.UsePopup="True"
+                            Style="{StaticResource MaterialDesignFloatingHintTextBox}" />
+                        <TextBlock VerticalAlignment="Center" Text="Start" />
+                        <ToggleButton
+                            Name="StartServerStreamingButton"
+                            Width="auto"
+                            Height="30"
+                            Margin="5,0,0,0"
+                            Style="{StaticResource MaterialDesignSwitchToggleButton}">
+                            <materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                                <SolidColorBrush Color="Green" />
+                            </materialDesign:ToggleButtonAssist.SwitchTrackOnBackground>
+                            <materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                                <SolidColorBrush Color="Red" />
+                            </materialDesign:ToggleButtonAssist.SwitchTrackOffBackground>
+                        </ToggleButton>
+                        <Button
+                            Name="ServerStreamingClearButton"
+                            Margin="5"
+                            Background="{StaticResource LightRedBrush}"
+                            Content="Clear" />
+                    </StackPanel>
+                    <ListBox
+                        x:Name="ServerTracks"
+                        Grid.Row="1"
+                        VerticalAlignment="Top">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding .}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <behaviors:Interaction.Behaviors>
+                            <mvvm:AutoScrollBehavior IsAutoScroll="True" />
+                        </behaviors:Interaction.Behaviors>
+                    </ListBox>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Console">
+                <TabItem.HeaderTemplate>
+                    <DataTemplate>
+                        <Border
+                            Width="100"
+                            Height="22"
+                            Background="Black"
+                            CornerRadius="5">
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Text="{Binding .}" />
+                        </Border>
+                    </DataTemplate>
+                </TabItem.HeaderTemplate>
+                <Grid>
+                    <TextBox
+                        MinHeight="100"
+                        Margin="5"
+                        VerticalAlignment="Stretch"
+                        VerticalContentAlignment="Top"
+                        AcceptsReturn="true"
+                        Background="#123356"
+                        FontSize="12"
+                        Foreground="orange"
+                        IsReadOnly="True"
+                        ScrollViewer.CanContentScroll="True"
+                        ScrollViewer.VerticalScrollBarVisibility="Auto"
+                        Text="{Binding Path=ConsoleOutPut, Source={x:Static common:Global.Singleton}}"
+                        TextWrapping="WrapWithOverflow">
+                        <behaviors:Interaction.Triggers>
+                            <behaviors:EventTrigger EventName="TextChanged">
+                                <behaviors:CallMethodAction MethodName="ScrollToEnd" />
+                            </behaviors:EventTrigger>
+                        </behaviors:Interaction.Triggers>
+                    </TextBox>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+    </Grid>
+</rxui:ReactiveWindow>
