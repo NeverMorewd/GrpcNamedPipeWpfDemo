@@ -36,7 +36,9 @@ internal class MessageReader<TMessage> : IAsyncStreamReader<TMessage>
     {
         try
         {
-            var combined =
+            ///https://github.com/dotnet/runtime/issues/78180
+            ///https://github.com/cyanfish/grpc-dotnet-namedpipes/issues/55
+            using var combined =
                 CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _callCancellationToken,
                     _deadline.Token);
             return await _payloadQueue.MoveNext(combined.Token).ConfigureAwait(false);
