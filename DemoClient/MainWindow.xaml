@@ -208,6 +208,7 @@
                         <RowDefinition Height="70" />
                         <RowDefinition Height="auto" />
                         <RowDefinition Height="*" />
+                        <RowDefinition Height="50" />
                     </Grid.RowDefinitions>
                     <StackPanel
                         Grid.Row="0"
@@ -388,6 +389,23 @@
                         </behaviors:Interaction.Behaviors>
 
                     </ListView>
+                    <StackPanel Grid.Row="3" Orientation="Horizontal">
+                        <materialDesign:Chip
+                            Name="PeakCost"
+                            Width="100"
+                            Icon="P"
+                            IconBackground="Red" />
+                        <materialDesign:Chip
+                            Name="TroughCost"
+                            Width="100"
+                            Icon="T" />
+                        <materialDesign:Chip
+                            Name="AverageCost"
+                            Width="100"
+                            Icon="A"
+                            IconBackground="Orange" />
+                        <TextBlock Name="TroughCostTxt" />
+                    </StackPanel>
                 </Grid>
             </TabItem>
             <TabItem Header="ClientStreaming">

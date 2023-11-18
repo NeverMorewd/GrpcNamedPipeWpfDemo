@@ -8,8 +8,8 @@ using System.Reactive.Linq;
 
 namespace DemoClient.Models
 {
-    public class UnaryTrackModelProxy:ReactiveObject,
-        IDisposable, 
+    public class UnaryTrackModelProxy : ReactiveObject,
+        IDisposable,
         IEquatable<UnaryTrackModelProxy>
     {
         private readonly UnaryTrackModel _track;
@@ -40,6 +40,8 @@ namespace DemoClient.Models
                     Status = t.Status;
                     Response = t.Response;
                 });
+            AllElapsed = _track.AllElapsed;
+            Response = _track.Response;
 
             _cleanUp = Disposable.Create(() =>
             {
@@ -47,7 +49,6 @@ namespace DemoClient.Models
                 statusRefresher.Dispose();
             });
         }
-        [Reactive]
         public bool Recent
         {
             get;
@@ -66,7 +67,7 @@ namespace DemoClient.Models
             set;
         }
         [Reactive]
-        public string Response
+        public string? Response
         {
             get;
             set;
@@ -77,30 +78,6 @@ namespace DemoClient.Models
             get;
             set;
         }
-        //private TrackStatusType _status;
-        //public TrackStatusType Status
-        //{
-        //    get => _status;
-        //    set => SetAndRaise(ref _status,value);
-        //}
-        //private StatusCode _statusCode;
-        //public StatusCode StatusCode
-        //{
-        //    get => _statusCode;
-        //    set => SetAndRaise(ref _statusCode, value);
-        //}
-        //private string _response;
-        //public string Response
-        //{
-        //    get => _response;
-        //    set => SetAndRaise(ref _response, value);
-        //}
-        //private TimeSpan _allElapsed;
-        //public TimeSpan AllElapsed
-        //{
-        //    get => _allElapsed;
-        //    set => SetAndRaise(ref _allElapsed, value);
-        //}
         public long Id => _id;
         public DateTime RequestTime => _track.RequestTime;
         public string Host => _track.Host;
@@ -131,12 +108,12 @@ namespace DemoClient.Models
             return _id.GetHashCode();
         }
 
-        public static bool operator == (UnaryTrackModelProxy left, UnaryTrackModelProxy right)
+        public static bool operator ==(UnaryTrackModelProxy left, UnaryTrackModelProxy right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator != (UnaryTrackModelProxy left, UnaryTrackModelProxy right)
+        public static bool operator !=(UnaryTrackModelProxy left, UnaryTrackModelProxy right)
         {
             return !Equals(left, right);
         }

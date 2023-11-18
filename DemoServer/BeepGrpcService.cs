@@ -83,6 +83,7 @@ namespace DemoServer
                         Console.WriteLine($"RequestStreamingFromServer: {response}");
                     }
                 }
+                await Task.Delay(30);
             }
         }
 
@@ -91,7 +92,7 @@ namespace DemoServer
             while (await requestStream.MoveNext(context.CancellationToken).ConfigureAwait(false))
             {
                 Console.WriteLine($"ResponseStreamingFromClient:{requestStream.Current.Payload.Content} - {context.Peer}");
-                await Task.Delay(20);
+                await Task.Delay(30);
             }
             return await Task.FromResult(new Beep { Payload = new Payload { Content = $"{context.Peer}:ResponseStreamingFromClient Over!" } });
         }
@@ -99,7 +100,7 @@ namespace DemoServer
 
         public void StartConverseService()
         {
-            Observable.Interval(TimeSpan.FromMilliseconds(10)).Subscribe(x => 
+            Observable.Interval(TimeSpan.FromMilliseconds(30)).Subscribe(x => 
             {
                 foreach (var messages in MessageCollectionDictionary.Values)
                 {

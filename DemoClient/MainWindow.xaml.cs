@@ -91,6 +91,23 @@ namespace DemoClient
                   vw => vw.MutiClientCheckBox.IsChecked)
                   .DisposeWith(dispos);
 
+                this.Bind(ViewModel,
+                  vm => vm.UnaryFacade.MinTimeElapsed,
+                  vw => vw.TroughCost.Content)
+                  .DisposeWith(dispos);
+
+                this.Bind(ViewModel,
+                 vm => vm.UnaryFacade.MaxTimeElapsed,
+                 vw => vw.PeakCost.Content)
+                 .DisposeWith(dispos);
+
+                this.Bind(ViewModel,
+                 vm => vm.UnaryFacade.AverageTimeElapsed,
+                 vw => vw.AverageCost.Content)
+                 .DisposeWith(dispos);
+
+
+
                 this.BindCommand(ViewModel,
                     vm => vm.UnaryOnceCommand,
                     v => v.BeepUnaryButton,
