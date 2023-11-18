@@ -2,7 +2,7 @@
 using DynamicData;
 using Grpc.Core;
 using ReactiveUI;
-using Rpa.Core.Beep;
+using Nevermore.Grpc.Ipc;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;

@@ -5,7 +5,7 @@ using DynamicData.Binding;
 using Grpc.Core;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
-using Rpa.Core.Beep;
+using Nevermore.Grpc.Ipc;
 using System;
 using System.Collections.ObjectModel;
 using System.Reactive;

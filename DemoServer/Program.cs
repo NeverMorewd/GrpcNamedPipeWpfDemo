@@ -1,7 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using DemoServer;
 using GrpcDotNetNamedPipes;
-using Rpa.Core.Beep;
+using Nevermore.Grpc.Ipc;
 
 Console.WriteLine("starting...");
 var server = new NamedPipeServer("53189515-EE63-427A-870D-F3D11BD96F36");

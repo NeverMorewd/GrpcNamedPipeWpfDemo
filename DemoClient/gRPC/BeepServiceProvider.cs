@@ -2,7 +2,7 @@
 using Grpc.Core.Interceptors;
 using GrpcDotNetNamedPipes;
 using MethodTimer;
-using Rpa.Core.Beep;
+using Nevermore.Grpc.Ipc;
 using System;
 using System.Collections.Generic;
 using System.Linq;

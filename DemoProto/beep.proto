@@ -1,5 +1,5 @@
 ﻿syntax = "proto3";
-package rpa.core.beep;
+package nevermore.grpc.ipc;
 message Beep
 {
     Payload Payload = 1;

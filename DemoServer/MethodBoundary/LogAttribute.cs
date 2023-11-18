@@ -1,8 +1,7 @@
 ﻿using Google.Protobuf;
 using Grpc.Core;
 using MethodBoundaryAspect.Fody.Attributes;
-using Rpa.Core.Beep;
-using System.Diagnostics;
+using Nevermore.Grpc.Ipc;
 using System.Text.Json;
 
 namespace DemoServer.MethodBoundary
