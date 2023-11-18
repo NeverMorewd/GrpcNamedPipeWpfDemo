@@ -56,6 +56,11 @@ namespace DemoClient
                     vw => vw.ServerTracks.ItemsSource)
                     .DisposeWith(dispos);
 
+                this.OneWayBind(ViewModel,
+                   vm => vm.ConverseStreamingFacade.Tracks,
+                   vw => vw.ConverseRequestingTracks.ItemsSource)
+                   .DisposeWith(dispos);
+
                 this.Bind(ViewModel,
                     vm => vm.UnaryFacade.IsLongRunnig,
                     vw => vw.TaskOption.IsChecked)
@@ -149,6 +154,24 @@ namespace DemoClient
                     v => v.StartAutoUnary,
                     nameof(StartAutoUnary.Unchecked))
                     .DisposeWith(dispos);
+
+                this.BindCommand(ViewModel,
+                    vm => vm.StartConverseStreamingCommand,
+                    v => v.StartConverseRequesting,
+                    nameof(StartConverseRequesting.Checked))
+                    .DisposeWith(dispos);
+
+                this.BindCommand(ViewModel,
+                    vm => vm.StopConverseStreamingCommand,
+                    v => v.StartConverseRequesting,
+                    nameof(StartConverseRequesting.Unchecked))
+                    .DisposeWith(dispos);
+
+
+                this.BindCommand(ViewModel,
+                    vm => vm.ConverseStreamingClearCommand,
+                    v => v.ConverseRequestingClearButton)
+                   .DisposeWith(dispos);
 
             });
 

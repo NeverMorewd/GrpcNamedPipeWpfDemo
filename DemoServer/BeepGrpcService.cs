@@ -2,6 +2,9 @@
 using Grpc.Core;
 using MethodTimer;
 using Rpa.Core.Beep;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Reactive.Linq;
 
 namespace DemoServer
 {
@@ -9,7 +12,15 @@ namespace DemoServer
     {
         private readonly int pid = Environment.ProcessId;
         private readonly string osVersion = Environment.OSVersion.ToString();
+        IObservable<string> MessageObservable;
+        readonly ConcurrentDictionary<string, BlockingCollection<string>> MessageCollectionDictionary = new ConcurrentDictionary<string, BlockingCollection<string>>();
 
+
+
+        public BeepGrpcService() 
+        {
+            StartConverseService();
+        }
 
         [UnaryLog]
         [Time("Beep content: '{request}'")]
@@ -50,7 +61,53 @@ namespace DemoServer
                     await Task.Delay(TimeSpan.FromMilliseconds(100));
                 }
             }
+
         }
+
+        public override async Task RequestStreamingFromServer(Beep request, IServerStreamWriter<Beep> responseStream, ServerCallContext context)
+        {
+            int streamCount = 0;
+
+            if (MessageCollectionDictionary.TryAdd(context.Peer, new BlockingCollection<string>()))
+            {
+
+            }
+            while (!context.CancellationToken.IsCancellationRequested)
+            {
+                if(MessageCollectionDictionary.TryGetValue(context.Peer, out BlockingCollection<string>? collection))
+                {
+                    if (collection.TryTake(out string? message))
+                    {
+                        var response = CreateResponse(message, $"I am a serverstreaming message! - {context.Peer}", streamCount++);
+                        await responseStream.WriteAsync(response);
+                        Console.WriteLine($"RequestStreamingFromServer: {response}");
+                    }
+                }
+            }
+        }
+
+        public override async Task<Beep> ResponseStreamingFromClient(IAsyncStreamReader<Beep> requestStream, ServerCallContext context)
+        {
+            while (await requestStream.MoveNext(context.CancellationToken).ConfigureAwait(false))
+            {
+                Console.WriteLine($"ResponseStreamingFromClient:{requestStream.Current.Payload.Content} - {context.Peer}");
+                await Task.Delay(20);
+            }
+            return await Task.FromResult(new Beep { Payload = new Payload { Content = $"{context.Peer}:ResponseStreamingFromClient Over!" } });
+        }
+
+
+        public void StartConverseService()
+        {
+            Observable.Interval(TimeSpan.FromMilliseconds(10)).Subscribe(x => 
+            {
+                foreach (var messages in MessageCollectionDictionary.Values)
+                {
+                    messages.TryAdd($"{DateTime.Now.ToUniversalTime()}");
+                }
+            });
+        }
+
 
         private Beep CreateResponse(Beep request,string peerString = "", int StreamCount = 1)
         {
@@ -60,6 +117,18 @@ namespace DemoServer
                 {
                     ClientId = request.Payload.ClientId,
                     Content = $"{pid}-{DateTime.Now.ToUniversalTime()}-{StreamCount}-{peerString}-{StreamCount}",
+                }
+            };
+        }
+
+        private Beep CreateResponse(string aContent, string peerString = "", int StreamCount = 1)
+        {
+            return new Beep
+            {
+                Payload = new Payload
+                {
+                    ClientId = peerString,
+                    Content = $"{pid}-{aContent}-{peerString}-{StreamCount}",
                 }
             };
         }

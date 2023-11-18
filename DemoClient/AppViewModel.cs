@@ -56,6 +56,25 @@ namespace DemoClient
                 StopClientStreamingCommand,
                 ClientStreamingClearCommand);
             #endregion
+
+            #region ConverseStreaming
+
+            StartConverseStreamingCommand = ReactiveCommand.CreateFromTask<string, string>(message =>
+            {
+                if (string.IsNullOrEmpty(message))
+                {
+                    message = nameof(StartConverseStreamingCommand);
+                }
+                return Task.FromResult(message);
+            });
+            StopConverseStreamingCommand = ReactiveCommand.CreateFromTask(() => Task.FromResult(nameof(StopConverseStreamingCommand)));
+            ConverseStreamingClearCommand = ReactiveCommand.CreateFromTask(() => Task.Delay(0));
+            ConverseStreamingFacade = new ConverseStreamingServiceFacade(_beepProvider,
+                StartConverseStreamingCommand,
+                StopConverseStreamingCommand,
+                ConverseStreamingClearCommand);
+
+            #endregion
         }
 
         public UnaryServiceFacade UnaryFacade 
@@ -70,6 +89,12 @@ namespace DemoClient
         }
 
         public ServerStreamingServiceFacade ServerStreamingFacade
+        {
+            get;
+            private set;
+        }
+
+        public ConverseStreamingServiceFacade ConverseStreamingFacade
         {
             get;
             private set;
@@ -151,7 +176,22 @@ namespace DemoClient
             get;
             set;
         }
+        public ReactiveCommand<string, string> StartConverseStreamingCommand
+        {
+            get;
+            set;
+        }
+        public ReactiveCommand<Unit, string> StopConverseStreamingCommand
+        {
+            get;
+            set;
+        }
 
+        public ReactiveCommand<Unit, Unit> ConverseStreamingClearCommand
+        {
+            get;
+            set;
+        }
         public void Dispose()
         {
             _disposable?.Dispose();

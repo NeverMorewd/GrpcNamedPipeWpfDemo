@@ -1,4 +1,5 @@
-﻿using DemoClient.gRPC;
+﻿using DemoClient.Common;
+using DemoClient.gRPC;
 using DemoClient.Models;
 using DynamicData;
 using DynamicData.Binding;
@@ -16,10 +17,11 @@ using System.Threading.Tasks;
 
 namespace DemoClient.ServiceFacades
 {
-    public class ServerStreamingServiceFacade : ReactiveObject, IDisposable
+    public class ConverseStreamingServiceFacade : ReactiveObject, IDisposable
     {
         private CancellationTokenSource? _cancellationTokenSource;
-        private AsyncServerStreamingCall<Beep>? serverStreamCall;
+        private AsyncServerStreamingCall<Beep>? _serverStreamCall;
+        private AsyncClientStreamingCall<Beep, Beep>? _clientStreamCall;
         private readonly IDisposable? _outputObservableCleanup;
         private IObservable<string>? _outputObservable;
         private readonly BeepServiceProvider _beepServiceProvider;
@@ -27,7 +29,7 @@ namespace DemoClient.ServiceFacades
         private readonly ReadOnlyObservableCollection<string> _tracks;
         private bool _isReady = false;
         private readonly IDisposable? _cleanUpAll;
-        public ServerStreamingServiceFacade(BeepServiceProvider beepServiceProvider,
+        public ConverseStreamingServiceFacade(BeepServiceProvider beepServiceProvider,
             IObservable<string> readyObservable,
             IObservable<string> suspendObservable,
             IObservable<Unit> clearObservable)
@@ -54,7 +56,7 @@ namespace DemoClient.ServiceFacades
             get;
             set;
         } = 10;
-        public ReadOnlyObservableCollection<string> ResponseTracks => _tracks;
+        public ReadOnlyObservableCollection<string> Tracks => _tracks;
         private IObservable<IChangeSet<string>> ResponseConnect()
         {
             return _items.Connect();
@@ -62,7 +64,7 @@ namespace DemoClient.ServiceFacades
         private void SetReady(string message)
         {
             Console.WriteLine(message);
-            Task.Factory.StartNew(() => 
+            Task.Factory.StartNew(() =>
             {
                 if (!_isReady)
                 {
@@ -84,13 +86,23 @@ namespace DemoClient.ServiceFacades
                             try
                             {
                                 _cancellationTokenSource = new CancellationTokenSource();
-                                CallOptions callOptions = new(cancellationToken:_cancellationTokenSource.Token);
-                                serverStreamCall = _beepServiceProvider.BeepServerStreaming(request, callOptions);
-                                var responseStream = serverStreamCall.ResponseStream;
+                                CallOptions callOptions = new(cancellationToken: _cancellationTokenSource.Token);
+
+                                /// RequestServerStreaming
+                                _serverStreamCall = _beepServiceProvider.RequestFromServerStreaming(request, callOptions);
+
+                                _clientStreamCall = _beepServiceProvider.ResponseFromClientStreaming(callOptions);
+                                var responseStream = _serverStreamCall.ResponseStream;
                                 while (await responseStream.MoveNext(_cancellationTokenSource.Token).ConfigureAwait(false))
                                 {
-                                    var response = responseStream.Current;
+                                    var request = responseStream.Current;
+                                    observer.OnNext(request.Payload.Content);
+                                    _items?.Add(request.Payload.Content);
+
+                                    var response = BuildReponse(request);
+                                    await _clientStreamCall.RequestStream.WriteAsync(BuildReponse(response));
                                     observer.OnNext(response.Payload.Content);
+                                    _items?.Add(response.Payload.Content);
                                 }
                                 observer.OnCompleted();
                             }
@@ -107,7 +119,7 @@ namespace DemoClient.ServiceFacades
                         _items.Add(ex.Message);
                     }
                 }
-            });           
+            });
         }
         private void SetSuspend(string message)
         {
@@ -115,7 +127,8 @@ namespace DemoClient.ServiceFacades
             if (_isReady)
             {
                 _cancellationTokenSource?.Cancel();
-                serverStreamCall?.Dispose();
+                _serverStreamCall?.Dispose();
+                _clientStreamCall?.Dispose();
                 _outputObservableCleanup?.Dispose();
                 _isReady = false;
             }
@@ -129,6 +142,18 @@ namespace DemoClient.ServiceFacades
         {
             _outputObservableCleanup?.Dispose();
             _cleanUpAll?.Dispose();
+        }
+
+        private Beep BuildReponse(Beep request)
+        {
+            return new Beep 
+            {
+                Payload = new Payload
+                {
+                    ClientId = BeepServiceProvider.ClientTag,
+                    Content = $"Response to Server:{request.Payload.Content}",
+                }
+            };
         }
 
     }

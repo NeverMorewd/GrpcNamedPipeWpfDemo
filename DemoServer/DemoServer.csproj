@@ -11,6 +11,7 @@
     <PackageReference Include="Grpc.Core" Version="2.46.6" />
     <PackageReference Include="MethodBoundaryAspect.Fody" Version="2.0.149" />
     <PackageReference Include="MethodTimer.Fody" Version="3.2.2" />
+    <PackageReference Include="System.Reactive.Linq" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>

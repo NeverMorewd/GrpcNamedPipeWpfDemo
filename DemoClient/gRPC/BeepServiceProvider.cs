@@ -77,11 +77,19 @@ namespace DemoClient.gRPC
             return _beepService.BeepStreamingFromServer(beep,callOptions);
         }
 
+
         [Time]
-        public AsyncDuplexStreamingCall<Beep,Beep> BeepStreamingFromClient(CallOptions callOptions)
+        public AsyncServerStreamingCall<Beep> RequestFromServerStreaming(Beep beep, CallOptions callOptions)
         {
-            return _beepService.BeepPingPongStreaming(callOptions);
+            return _beepService.RequestStreamingFromServer(beep, callOptions);
         }
+
+        [Time]
+        public AsyncClientStreamingCall<Beep, Beep> ResponseFromClientStreaming(CallOptions callOptions)
+        {
+            return _beepService.ResponseStreamingFromClient(callOptions);
+        }
+
 
         [Time]
         private async Task<Beep> BeepUnaryInternal(Beep request,
@@ -105,7 +113,7 @@ namespace DemoClient.gRPC
 
         public static string GetServiceName()
         {
-            return typeof(BeepService.BeepServiceClient).FullName;
+            return nameof(BeepService.BeepServiceClient);
         }
     }
 }

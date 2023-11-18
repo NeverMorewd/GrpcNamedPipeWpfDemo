@@ -14,7 +14,10 @@ message Payload
 service BeepService
 {
     rpc BeepUnary(Beep) returns (Beep);
-    rpc BeepPingPongStreaming(stream Beep) returns (stream Beep);
+
     rpc BeepStreamingFromClient(stream Beep) returns (Beep);
     rpc BeepStreamingFromServer(Beep) returns (stream Beep);
+
+    rpc ResponseStreamingFromClient(stream Beep) returns (Beep);
+    rpc RequestStreamingFromServer(Beep) returns (stream Beep);
 }

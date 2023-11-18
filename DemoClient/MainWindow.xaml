@@ -496,6 +496,40 @@
                     </ListBox>
                 </Grid>
             </TabItem>
+            <TabItem Header="ConverseRequesting">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="70" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                        <TextBlock VerticalAlignment="Center" Text="Start" />
+                        <ToggleButton
+                            Name="StartConverseRequesting"
+                            Width="auto"
+                            Height="30"
+                            Margin="5,0,0,0"
+                            Style="{StaticResource MaterialDesignSwitchToggleButton}" />
+                        <Button
+                            Name="ConverseRequestingClearButton"
+                            Margin="5"
+                            Background="{StaticResource LightRedBrush}"
+                            Content="Clear" />
+                    </StackPanel>
+                    <ListBox
+                        x:Name="ConverseRequestingTracks"
+                        Grid.Row="1"
+                        VerticalAlignment="Top">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding .}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </TabItem>
             <TabItem Header="Console">
                 <TabItem.HeaderTemplate>
                     <DataTemplate>
