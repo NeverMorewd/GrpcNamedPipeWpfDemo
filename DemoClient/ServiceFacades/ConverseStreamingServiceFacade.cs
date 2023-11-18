@@ -100,7 +100,7 @@ namespace DemoClient.ServiceFacades
                                     _items?.Add(request.Payload.Content);
 
                                     var response = BuildReponse(request);
-                                    await _clientStreamCall.RequestStream.WriteAsync(BuildReponse(response));
+                                    await _clientStreamCall.RequestStream.WriteAsync(response);
                                     observer.OnNext(response.Payload.Content);
                                     _items?.Add(response.Payload.Content);
                                 }
