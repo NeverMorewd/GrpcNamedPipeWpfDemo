@@ -1,6 +1,8 @@
 ﻿using DemoClient.Common;
 using MaterialDesignThemes.Wpf;
+using ReactiveUI;
 using System;
+using System.Reactive.Linq;
 using System.Windows;
 
 namespace DemoClient
@@ -16,9 +18,9 @@ namespace DemoClient
 
         public App()
         {
-            var consoleWriter = new ConsoleOutputWriter((content)
-                  => Global.Singleton.ConsoleOutPut += content);
+            var consoleWriter = new ConsoleOutputWriter();
             Console.SetOut(consoleWriter);
+            Global.Singleton.SetConsoleObservable(consoleWriter.OutputObservable);
         }
         protected override void OnStartup(StartupEventArgs e)
         {

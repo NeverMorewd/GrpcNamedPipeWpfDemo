@@ -564,26 +564,21 @@
                     </DataTemplate>
                 </TabItem.HeaderTemplate>
                 <Grid>
-                    <TextBox
+                    <ListBox
                         MinHeight="100"
                         Margin="5"
                         VerticalAlignment="Stretch"
                         VerticalContentAlignment="Top"
-                        AcceptsReturn="true"
                         Background="#123356"
                         FontSize="12"
                         Foreground="orange"
-                        IsReadOnly="True"
+                        ItemsSource="{Binding Path=ConsoleOutPuts, Source={x:Static common:Global.Singleton}}"
                         ScrollViewer.CanContentScroll="True"
-                        ScrollViewer.VerticalScrollBarVisibility="Auto"
-                        Text="{Binding Path=ConsoleOutPut, Source={x:Static common:Global.Singleton}}"
-                        TextWrapping="WrapWithOverflow">
-                        <behaviors:Interaction.Triggers>
-                            <behaviors:EventTrigger EventName="TextChanged">
-                                <behaviors:CallMethodAction MethodName="ScrollToEnd" />
-                            </behaviors:EventTrigger>
-                        </behaviors:Interaction.Triggers>
-                    </TextBox>
+                        ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <behaviors:Interaction.Behaviors>
+                            <mvvm:AutoScrollBehavior IsAutoScroll="True" />
+                        </behaviors:Interaction.Behaviors>
+                    </ListBox>
                 </Grid>
             </TabItem>
         </TabControl>

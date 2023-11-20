@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Text;
 
 namespace DemoClient
@@ -7,20 +9,22 @@ namespace DemoClient
     public class ConsoleOutputWriter : TextWriter
     {
         private readonly TextWriter consoleOutput;
-        private readonly Action<string> outputTextAction;
+        private readonly Subject<string?> _outputSubject;
 
-        public ConsoleOutputWriter(Action<string> anOutputTextAction)
+        public ConsoleOutputWriter()
         {
             consoleOutput = Console.Out;
-            outputTextAction = anOutputTextAction;
+            _outputSubject = new Subject<string?>();
         }
 
         public override void WriteLine(string? value)
         {
             consoleOutput.WriteLine(value);
-            outputTextAction?.Invoke($"{value}{Environment.NewLine}");
+            _outputSubject.OnNext(value);
         }
 
         public override Encoding Encoding => consoleOutput.Encoding;
+
+        public IObservable<string?> OutputObservable => _outputSubject.AsObservable();
     }
 }
