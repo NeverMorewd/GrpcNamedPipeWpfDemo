@@ -88,7 +88,7 @@ namespace DemoClient
 
                 this.Bind(ViewModel,
                   vm => vm.UnaryFacade.IsUseMutiClient,
-                  vw => vw.MutiClientCheckBox.IsChecked)
+                  vw => vw.MultiClientCheckBox.IsChecked)
                   .DisposeWith(dispos);
 
                 this.Bind(ViewModel,
@@ -112,8 +112,13 @@ namespace DemoClient
                 .DisposeWith(dispos);
 
                 this.OneWayBind(ViewModel,
-                vm => vm.UnaryFacade.CostDatas,
-                vw => vw.DataChart.Values)
+                vm => vm.UnaryFacade.CostSeries,
+                vw => vw.CostChart.Series)
+                .DisposeWith(dispos);
+
+                this.OneWayBind(ViewModel,
+                vm => vm.UnaryFacade.ChartSyncContext,
+                vw => vw.CostChart.SyncContext)
                 .DisposeWith(dispos);
 
                 this.Bind(ViewModel,

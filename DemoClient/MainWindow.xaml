@@ -207,8 +207,8 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="70" />
                         <RowDefinition Height="auto" />
+                        <RowDefinition Height="2*" />
                         <RowDefinition Height="*" />
-                        <RowDefinition Height="150" />
                         <RowDefinition Height="50" />
                     </Grid.RowDefinitions>
                     <StackPanel
@@ -305,9 +305,9 @@
                                 Style="{StaticResource MaterialDesignSwitchToggleButton}"
                                 ToolTip="StartAutoUnary" />
                             <CheckBox
-                                Name="MutiClientCheckBox"
+                                Name="MultiClientCheckBox"
                                 materialDesign:CheckBoxAssist.CheckBoxSize="20"
-                                Content="MutiClient"
+                                Content="MultiClient"
                                 IsChecked="False" />
                         </StackPanel>
                     </Expander>
@@ -390,10 +390,20 @@
                         </behaviors:Interaction.Behaviors>
 
                     </ListView>
-                    <Grid xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf" Grid.Row="3">
+                    <GridSplitter
+                        Grid.Row="2"
+                        Height="5"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Bottom"
+                        Background="Purple"
+                        Foreground="Purple" />
+                    <!--<Grid
+                        xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
+                        xmlns:lvc2="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+                        Grid.Row="3">
                         <lvc:CartesianChart
                             Margin="1"
-                            AnimationsSpeed="0:0:0.2"
+                            AnimationsSpeed="0:0:0.5"
                             DataTooltip="{x:Null}"
                             FontSize="16"
                             FontWeight="Bold"
@@ -418,6 +428,18 @@
                                         <lvc:Separator Step="5" />
                                     </lvc:Axis.Separator>
                                 </lvc:Axis>
+                                <lvc:Axis
+                                    x:Name="AverageTime"
+                                    Title="AverageTime"
+                                    Foreground="IndianRed"
+                                    Labels="0,1,2,3,4,5,6,7,8,9,10"
+                                    MaxValue="10"
+                                    MinValue="0"
+                                    Position="RightTop">
+                                    <lvc:Axis.Separator>
+                                        <lvc:Separator Step="1" />
+                                    </lvc:Axis.Separator>
+                                </lvc:Axis>
                             </lvc:CartesianChart.AxisY>
                             <lvc:CartesianChart.Series>
                                 <lvc:LineSeries
@@ -435,8 +457,26 @@
                                         </LinearGradientBrush>
                                     </lvc:LineSeries.Fill>
                                 </lvc:LineSeries>
+                                <lvc:LineSeries
+                                    Name="AverageDataChart"
+                                    LineSmoothness="1"
+                                    PointForeground="Orange"
+                                    PointGeometry="{x:Static lvc:DefaultGeometries.Square}"
+                                    PointGeometrySize="3"
+                                    Stroke="Purple"
+                                    StrokeThickness="3">
+                                    <lvc:LineSeries.Fill>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                            <GradientStop Offset="0" Color="Transparent" />
+                                            <GradientStop Offset="1" Color="Transparent" />
+                                        </LinearGradientBrush>
+                                    </lvc:LineSeries.Fill>
+                                </lvc:LineSeries>
                             </lvc:CartesianChart.Series>
                         </lvc:CartesianChart>
+                    </Grid>-->
+                    <Grid xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF" Grid.Row="3">
+                        <lvc:CartesianChart Name="CostChart" />
                     </Grid>
                     <StackPanel Grid.Row="4" Orientation="Horizontal">
                         <materialDesign:Chip

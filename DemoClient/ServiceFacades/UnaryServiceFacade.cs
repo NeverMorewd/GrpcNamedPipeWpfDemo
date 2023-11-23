@@ -3,12 +3,15 @@ using DemoClient.gRPC;
 using DemoClient.Models;
 using DynamicData;
 using DynamicData.Binding;
-using LiveCharts;
-using LiveCharts.Configurations;
-using LiveCharts.Wpf;
+using LiveChartsCore;
+using LiveChartsCore.Defaults;
+using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.Painting;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using SkiaSharp;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
@@ -37,6 +40,8 @@ namespace DemoClient.ServiceFacades
         private readonly IObservableCache<UnaryTrackModel, long> _cacheData;
         private const int IgnoreCost = 200;
         private const int SlowCost = 50;
+        private readonly ObservableCollection<ObservableValue> _values;
+        private readonly ObservableCollection<ObservableValue> _averageValues;
 
         /// <summary>
         /// .ctor
@@ -49,6 +54,12 @@ namespace DemoClient.ServiceFacades
             IObservable<string> inputObservable,
             IObservable<Unit> clearObservable)
         {
+            _values = new ObservableCollection<ObservableValue>();
+            _averageValues = new ObservableCollection<ObservableValue>();
+
+            ChartSyncContext = new object();
+
+
             var subject = new ReplaySubject<UnaryTrackModel>();
             _trackCacheObserver = subject.AsObserver();
             _trackCacheObservable = subject.AsObservable();
@@ -57,7 +68,29 @@ namespace DemoClient.ServiceFacades
             _clearObservable = clearObservable;
             _beepServiceProvider = beepServiceProvider;
 
-            CostDatas = new ChartValues<CostMeasureModel>();
+            CostSeries = new List<ISeries> 
+            {
+                new LineSeries<ObservableValue, LiveChartsCore.SkiaSharpView.Drawing.Geometries.RectangleGeometry>
+                {
+                    Values = _values,
+                    Fill = null,
+                    LineSmoothness = 1,
+                    GeometryFill = new SolidColorPaint(SKColors.Purple),
+                    GeometrySize = 8,
+                    GeometryStroke = new SolidColorPaint(SKColors.Purple)
+                },
+
+                new LineSeries<ObservableValue, LiveChartsCore.SkiaSharpView.Drawing.Geometries.CircleGeometry>
+                {
+                    Values = _averageValues,
+
+                    Stroke = new SolidColorPaint(SKColors.DarkOliveGreen, 3),
+                    Fill = null,
+                    GeometryStroke = null,
+                    GeometryFill = new SolidColorPaint(SKColors.DarkOliveGreen),
+                    GeometrySize = 8
+                }
+            };
 
 
 
@@ -110,7 +143,7 @@ namespace DemoClient.ServiceFacades
                                {
                                    MaxTimeElapsed = t;
                                });
-
+            int subscribeCount = 1;
             var averageCleaner = _trackCacheObservable
                                   .WhereNotNull()
                                   .Select(t => t.AllElapsed.TotalMilliseconds)
@@ -122,6 +155,7 @@ namespace DemoClient.ServiceFacades
                                   .Subscribe(t =>
                                   {
                                       AverageTimeElapsed = t;
+                                      
                                   });
 
             var maxCountCleaner = _trackCacheObservable
@@ -146,12 +180,6 @@ namespace DemoClient.ServiceFacades
                                   });
 
 
-            var mapper = Mappers.Xy<CostMeasureModel>()
-               .X(model => model.MeasureIndex)
-               .Y(model => model.MeasureValue);
-            Charting.For<CostMeasureModel>(mapper);
-
-            int subscribeCount = 1;
             var chartCountCleaner = _trackCacheObservable
                                     .WhereNotNull()
                                     .Select(t => t.AllElapsed.TotalMilliseconds)
@@ -159,14 +187,16 @@ namespace DemoClient.ServiceFacades
                                     .ObserveOn(RxApp.MainThreadScheduler)
                                     .Subscribe(t =>
                                     {
-                                        CostDatas.Add(new CostMeasureModel 
+                                        lock (ChartSyncContext)
                                         {
-                                            MeasureIndex = subscribeCount++,
-                                            MeasureValue = t,
-                                        });
-                                        if (CostDatas.Count > 30)
+                                            subscribeCount++;
+                                            _values.Add(new ObservableValue(t));
+                                            _averageValues.Add(new ObservableValue(AverageTimeElapsed));
+                                        }
+                                        if (_values.Count > 100)
                                         {
-                                            CostDatas.RemoveAt(0);
+                                            _values.RemoveAt(0);
+                                            _averageValues.RemoveAt(0);
                                         }
                                     });
 
@@ -272,12 +302,12 @@ namespace DemoClient.ServiceFacades
         } = false;
 
         [Reactive]
-        public ChartValues<CostMeasureModel> CostDatas
+        public List<ISeries> CostSeries
         {
             get;
             set;
         }
-
+        public object ChartSyncContext { get; }
         public ReactiveCommand<string, Unit> StartAutoUnaryCommand
         {
             get;
