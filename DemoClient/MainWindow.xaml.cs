@@ -106,6 +106,21 @@ namespace DemoClient
                  vw => vw.AverageCost.Content)
                  .DisposeWith(dispos);
 
+                this.Bind(ViewModel,
+                vm => vm.UnaryFacade.MaxCount,
+                vw => vw.MaxCount.Content)
+                .DisposeWith(dispos);
+
+                this.OneWayBind(ViewModel,
+                vm => vm.UnaryFacade.CostDatas,
+                vw => vw.DataChart.Values)
+                .DisposeWith(dispos);
+
+                this.Bind(ViewModel,
+               vm => vm.UnaryFacade.AllCount,
+               vw => vw.AllCount.Content)
+               .DisposeWith(dispos);
+
 
 
                 this.BindCommand(ViewModel,

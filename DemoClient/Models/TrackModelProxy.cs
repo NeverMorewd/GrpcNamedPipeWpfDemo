@@ -19,8 +19,10 @@ namespace DemoClient.Models
         {
             _id = aTrack.Id;
             _track = aTrack;
-            this.Status = _track.Status;
-            this.StatusCode = _track.StatusCode;
+            Status = _track.Status;
+            StatusCode = _track.StatusCode;
+            AllElapsed = _track.AllElapsed;
+            Response = _track.Response;
 
             var isRecent = DateTime.Now.Subtract(aTrack.RequestTime).TotalSeconds < 2;
             var recentIndicator = Disposable.Empty;
@@ -40,8 +42,6 @@ namespace DemoClient.Models
                     Status = t.Status;
                     Response = t.Response;
                 });
-            AllElapsed = _track.AllElapsed;
-            Response = _track.Response;
 
             _cleanUp = Disposable.Create(() =>
             {

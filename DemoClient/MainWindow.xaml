@@ -12,8 +12,8 @@
     xmlns:mvvm="clr-namespace:DemoClient.Mvvm"
     xmlns:rxui="http://reactiveui.net"
     Title="GrpcIPCClientDemo"
-    Width="920"
-    Height="550"
+    Width="950"
+    Height="600"
     x:TypeArguments="local:AppViewModel"
     Icon="lemon.ico"
     mc:Ignorable="d">
@@ -208,6 +208,7 @@
                         <RowDefinition Height="70" />
                         <RowDefinition Height="auto" />
                         <RowDefinition Height="*" />
+                        <RowDefinition Height="150" />
                         <RowDefinition Height="50" />
                     </Grid.RowDefinitions>
                     <StackPanel
@@ -389,7 +390,55 @@
                         </behaviors:Interaction.Behaviors>
 
                     </ListView>
-                    <StackPanel Grid.Row="3" Orientation="Horizontal">
+                    <Grid xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf" Grid.Row="3">
+                        <lvc:CartesianChart
+                            Margin="1"
+                            AnimationsSpeed="0:0:0.2"
+                            DataTooltip="{x:Null}"
+                            FontSize="16"
+                            FontWeight="Bold"
+                            Hoverable="False">
+                            <lvc:CartesianChart.AxisX>
+                                <lvc:Axis Title="Calls">
+                                    <lvc:Axis.Separator>
+                                        <lvc:Separator IsEnabled="False" Step="1" />
+                                    </lvc:Axis.Separator>
+                                </lvc:Axis>
+                            </lvc:CartesianChart.AxisX>
+                            <lvc:CartesianChart.AxisY>
+                                <lvc:Axis
+                                    Title="Time"
+                                    Foreground="Black"
+                                    Labels="0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20"
+                                    LabelsRotation="0"
+                                    MaxValue="20"
+                                    MinValue="0"
+                                    ShowLabels="True">
+                                    <lvc:Axis.Separator>
+                                        <lvc:Separator Step="5" />
+                                    </lvc:Axis.Separator>
+                                </lvc:Axis>
+                            </lvc:CartesianChart.AxisY>
+                            <lvc:CartesianChart.Series>
+                                <lvc:LineSeries
+                                    Name="DataChart"
+                                    DataLabels="True"
+                                    LineSmoothness="1"
+                                    PointForeground="Red"
+                                    PointGeometrySize="5"
+                                    Stroke="#00CCFF"
+                                    StrokeThickness="1">
+                                    <lvc:LineSeries.Fill>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                            <GradientStop Offset="0" Color="Orange" />
+                                            <GradientStop Offset="1" Color="White" />
+                                        </LinearGradientBrush>
+                                    </lvc:LineSeries.Fill>
+                                </lvc:LineSeries>
+                            </lvc:CartesianChart.Series>
+                        </lvc:CartesianChart>
+                    </Grid>
+                    <StackPanel Grid.Row="4" Orientation="Horizontal">
                         <materialDesign:Chip
                             Name="PeakCost"
                             Width="100"
@@ -404,7 +453,16 @@
                             Width="100"
                             Icon="A"
                             IconBackground="Orange" />
-                        <TextBlock Name="TroughCostTxt" />
+                        <materialDesign:Chip
+                            Name="MaxCount"
+                            Width="100"
+                            Icon="MC"
+                            IconBackground="DarkRed" />
+                        <materialDesign:Chip
+                            Name="AllCount"
+                            Width="100"
+                            Icon="AC"
+                            IconBackground="Purple" />
                     </StackPanel>
                 </Grid>
             </TabItem>

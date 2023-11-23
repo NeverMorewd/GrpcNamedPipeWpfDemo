@@ -3,6 +3,9 @@ using DemoClient.gRPC;
 using DemoClient.Models;
 using DynamicData;
 using DynamicData.Binding;
+using LiveCharts;
+using LiveCharts.Configurations;
+using LiveCharts.Wpf;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
@@ -32,6 +35,8 @@ namespace DemoClient.ServiceFacades
         private readonly IObservable<UnaryTrackModel> _trackCacheObservable;
         private BeepServiceProvider _beepServiceProvider;
         private readonly IObservableCache<UnaryTrackModel, long> _cacheData;
+        private const int IgnoreCost = 200;
+        private const int SlowCost = 50;
 
         /// <summary>
         /// .ctor
@@ -52,12 +57,18 @@ namespace DemoClient.ServiceFacades
             _clearObservable = clearObservable;
             _beepServiceProvider = beepServiceProvider;
 
+            CostDatas = new ChartValues<CostMeasureModel>();
+
+
+
             ///Bind to ui with cache
             var dataConnectable = LoadAndMaintainCache().Publish();
             var dataCleanUp = dataConnectable.Connect();
             _cacheData = dataConnectable.AsObservableCache();
+
             _tracksCleanUp = _cacheData
                 .Connect()
+                .LimitSizeTo(1000)
                 .Transform(x => new UnaryTrackModelProxy(x))
                 .Sort(SortExpressionComparer<UnaryTrackModelProxy>.Descending(t => t.RequestTime), SortOptimisations.None, 25)
                 .ObserveOn(RxApp.MainThreadScheduler)
@@ -67,51 +78,97 @@ namespace DemoClient.ServiceFacades
 
             ///inputobservable Subscribe input from ReactiveCommand and Convert to _trackCacheSubject
             _inputCleanUp = _inputObservable
-               .Select(x => new UnaryTrackModel(DateTime.Now.ToFileTime(),
-                       DateTime.Now,
-                       Global.Singleton.ChannelName,
-                       x,
-                       BeepServiceProvider.ClientTag,
-                       BeepServiceProvider.GetServiceName()))
-               .Subscribe(x =>
-               {
-                   UnaryTaskExecute(x);
-               });
+                               .Select(x => new UnaryTrackModel(DateTime.Now.ToFileTime(),
+                                       DateTime.Now,
+                                       Global.Singleton.ChannelName,
+                                       x,
+                                       BeepServiceProvider.ClientTag,
+                                       BeepServiceProvider.GetServiceName()))
+                               .Subscribe(x =>
+                               {
+                                   UnaryTaskExecute(x);
+                               });
 
             var minCleaner = _trackCacheObservable
-                .WhereNotNull()
-                .Select(t => t.AllElapsed.TotalMilliseconds)
-                .Where(t => t > 0 && t < 50) //ignore 0 and big number from cold start
-                .Scan((min, next) => Math.Min(min, next))
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe(t =>
-                {
-                    MinTimeElapsed = t;
-                });
+                                .WhereNotNull()
+                                .Select(t => t.AllElapsed.TotalMilliseconds)
+                                .Where(t => t > 0 && t < IgnoreCost) //ignore 0 and big number from cold start
+                                .Scan((min, next) => Math.Min(min, next))
+                                .ObserveOn(RxApp.MainThreadScheduler)
+                                .Subscribe(t =>
+                                {
+                                    MinTimeElapsed = t;
+                                });
 
             var maxCleaner = _trackCacheObservable
-               .WhereNotNull()
-               .Select(t => t.AllElapsed.TotalMilliseconds)
-               .Where(t => t > 0 && t < 50) //ignore 0 and big number from cold start
-               .Scan((min, next) => Math.Max(min, next))
-               .ObserveOn(RxApp.MainThreadScheduler)
-               .Subscribe(t =>
-               {
-                   MaxTimeElapsed = t;
-               });
+                               .WhereNotNull()
+                               .Select(t => t.AllElapsed.TotalMilliseconds)
+                               .Where(t => t > 0 && t < IgnoreCost) //ignore 0 and big number from cold start
+                               .Scan((min, next) => Math.Max(min, next))
+                               .ObserveOn(RxApp.MainThreadScheduler)
+                               .Subscribe(t =>
+                               {
+                                   MaxTimeElapsed = t;
+                               });
 
             var averageCleaner = _trackCacheObservable
-              .WhereNotNull()
-              .Select(t => t.AllElapsed.TotalMilliseconds)
-              .Where(t => t > 0 && t < 50) //ignore 0 and big number from cold start
-              .Scan(new { Sum = 0.0, Count = 0 }, (acc, next) => new { Sum = acc.Sum + next, Count = acc.Count + 1 })
-              .Where(acc => acc.Count > 0)
-              .Select(acc => acc.Sum / acc.Count)
-              .ObserveOn(RxApp.MainThreadScheduler)
-              .Subscribe(t =>
-              {
-                  AverageTimeElapsed = t;
-              });
+                                  .WhereNotNull()
+                                  .Select(t => t.AllElapsed.TotalMilliseconds)
+                                  .Where(t => t > 0 && t < IgnoreCost) //ignore 0 and big number from cold start
+                                  .Scan(new { Sum = 0.0, Count = 0 }, (acc, next) => new { Sum = acc.Sum + next, Count = acc.Count + 1 })
+                                  .Where(acc => acc.Count > 0)
+                                  .Select(acc => acc.Sum / acc.Count)
+                                  .ObserveOn(RxApp.MainThreadScheduler)
+                                  .Subscribe(t =>
+                                  {
+                                      AverageTimeElapsed = t;
+                                  });
+
+            var maxCountCleaner = _trackCacheObservable
+                               .WhereNotNull()
+                               .Select(t => t.AllElapsed.TotalMilliseconds)
+                               .Where(t => t > SlowCost) //ignore 0 and big number from cold start
+                               .Scan(0, (count, _) => count + 1)
+                               .ObserveOn(RxApp.MainThreadScheduler)
+                               .Subscribe(t =>
+                               {
+                                   MaxCount = t;
+                               });
+
+            var allCountCleaner = _trackCacheObservable
+                                  .WhereNotNull()
+                                  .DistinctUntilChanged()
+                                  .Scan(0, (count, _) => count + 1)
+                                  .ObserveOn(RxApp.MainThreadScheduler)
+                                  .Subscribe(t =>
+                                  {
+                                      AllCount = t;
+                                  });
+
+
+            var mapper = Mappers.Xy<CostMeasureModel>()
+               .X(model => model.MeasureIndex)
+               .Y(model => model.MeasureValue);
+            Charting.For<CostMeasureModel>(mapper);
+
+            int subscribeCount = 1;
+            var chartCountCleaner = _trackCacheObservable
+                                    .WhereNotNull()
+                                    .Select(t => t.AllElapsed.TotalMilliseconds)
+                                    .Where(t=>t>0)
+                                    .ObserveOn(RxApp.MainThreadScheduler)
+                                    .Subscribe(t =>
+                                    {
+                                        CostDatas.Add(new CostMeasureModel 
+                                        {
+                                            MeasureIndex = subscribeCount++,
+                                            MeasureValue = t,
+                                        });
+                                        if (CostDatas.Count > 30)
+                                        {
+                                            CostDatas.RemoveAt(0);
+                                        }
+                                    });
 
             StartAutoUnaryCommand = ReactiveCommand.Create<string>(
                 (t)
@@ -137,7 +194,9 @@ namespace DemoClient.ServiceFacades
                 dataCleanUp, 
                 averageCleaner, 
                 maxCleaner, 
-                minCleaner);
+                minCleaner,
+                maxCountCleaner,
+                allCountCleaner);
 
         }
         public ReadOnlyObservableCollection<UnaryTrackModelProxy> UnaryTracks => _unaryTracks;
@@ -168,7 +227,7 @@ namespace DemoClient.ServiceFacades
         {
             get;
             set;
-        } = 50;
+        } = 200;
 
         [Reactive]
         public double MinTimeElapsed
@@ -185,6 +244,20 @@ namespace DemoClient.ServiceFacades
         } = TimeSpan.FromMilliseconds(0).TotalMilliseconds;
 
         [Reactive]
+        public int MaxCount
+        {
+            get;
+            set;
+        } = 0;
+
+        [Reactive]
+        public int AllCount
+        {
+            get;
+            set;
+        } = 0;
+
+        [Reactive]
         public double AverageTimeElapsed
         {
             get;
@@ -197,6 +270,13 @@ namespace DemoClient.ServiceFacades
             get;
             set;
         } = false;
+
+        [Reactive]
+        public ChartValues<CostMeasureModel> CostDatas
+        {
+            get;
+            set;
+        }
 
         public ReactiveCommand<string, Unit> StartAutoUnaryCommand
         {
@@ -217,10 +297,9 @@ namespace DemoClient.ServiceFacades
             //construct an cache datasource specifying that the primary key is UnaryTrackModel.Id
             return ObservableChangeSet.Create<UnaryTrackModel, long>(caches =>
             {
-                var limitCleaner = caches.LimitSizeTo(100).Subscribe();
                 var cacheCleaner = _trackCacheObservable.Subscribe(t => 
                 {
-                    caches.AddOrUpdate(t); 
+                    caches.AddOrUpdate(t);                  
                 });
                 var clearCleaner = _clearObservable.Subscribe(t => 
                 {
@@ -242,7 +321,7 @@ namespace DemoClient.ServiceFacades
                     AverageTimeElapsed = 0;
                 });
 
-                return new CompositeDisposable(limitCleaner, cacheCleaner, clearCleaner);
+                return new CompositeDisposable(cacheCleaner, clearCleaner);
             },  track => track.Id);
         }
 
@@ -265,7 +344,7 @@ namespace DemoClient.ServiceFacades
                 try
                 {
                     unaryTrackModel.SetStatus(TrackStatusType.Requesting);
-                    //_trackCacheSubject.OnNext(unaryTrackModel);
+                    //_trackCacheObserver.OnNext(unaryTrackModel);
 
                     if (IsUseMutiClient)
                     {
@@ -275,7 +354,7 @@ namespace DemoClient.ServiceFacades
                     var responseTask = _beepServiceProvider.Beep(unaryTrackModel.Request, TimeSpan.FromMilliseconds(Timeout), ServerDelay);
 
                     unaryTrackModel.SetStatus(TrackStatusType.Proceeding);
-                    //_trackCacheSubject.OnNext(unaryTrackModel);
+                    //_trackCacheObserver.OnNext(unaryTrackModel);
 
                     var response = await responseTask;
 
