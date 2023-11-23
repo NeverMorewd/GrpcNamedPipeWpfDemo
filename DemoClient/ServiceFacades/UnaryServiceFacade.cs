@@ -5,8 +5,11 @@ using DynamicData;
 using DynamicData.Binding;
 using LiveChartsCore;
 using LiveChartsCore.Defaults;
+using LiveChartsCore.Drawing;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
+using LiveChartsCore.SkiaSharpView.Painting.Effects;
+using LiveChartsCore.Themes;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using SkiaSharp;
@@ -29,7 +32,6 @@ namespace DemoClient.ServiceFacades
     {
         private readonly IDisposable? _cleanUpAll;
         private readonly IDisposable? _tracksCleanUp;
-        private readonly IDisposable? _inputCleanUp;
         private readonly IObservable<string> _inputObservable;
         private IDisposable? _autoInputCleanUp;
         private readonly IObservable<Unit> _clearObservable;
@@ -42,6 +44,7 @@ namespace DemoClient.ServiceFacades
         private const int SlowCost = 50;
         private readonly ObservableCollection<ObservableValue> _values;
         private readonly ObservableCollection<ObservableValue> _averageValues;
+        private readonly LvcColor[] colors = ColorPalletes.FluentDesign;
 
         /// <summary>
         /// .ctor
@@ -56,11 +59,9 @@ namespace DemoClient.ServiceFacades
         {
             _values = new ObservableCollection<ObservableValue>();
             _averageValues = new ObservableCollection<ObservableValue>();
-
             ChartSyncContext = new object();
-
-
             var subject = new ReplaySubject<UnaryTrackModel>();
+
             _trackCacheObserver = subject.AsObserver();
             _trackCacheObservable = subject.AsObservable();
 
@@ -68,38 +69,52 @@ namespace DemoClient.ServiceFacades
             _clearObservable = clearObservable;
             _beepServiceProvider = beepServiceProvider;
 
+            var strokeThickness = 2;
+            var strokeDashArray = new float[] { 3 * strokeThickness, 2 * strokeThickness };
+            var effect = new DashEffect(strokeDashArray);
+
+            var color = colors.First();
             CostSeries = new List<ISeries> 
             {
                 new LineSeries<ObservableValue, LiveChartsCore.SkiaSharpView.Drawing.Geometries.RectangleGeometry>
                 {
                     Values = _values,
-                    Fill = null,
+                    Fill = new SolidColorPaint(new SKColor(color.R, color.G, color.B, 90)),
                     LineSmoothness = 1,
                     GeometryFill = new SolidColorPaint(SKColors.Purple),
-                    GeometrySize = 8,
-                    GeometryStroke = new SolidColorPaint(SKColors.Purple)
+                    GeometrySize = 4,
+                    GeometryStroke = new SolidColorPaint(SKColors.Purple),
+                    Stroke = new SolidColorPaint
+                    {
+                        Color = SKColors.CornflowerBlue,
+                        StrokeCap = SKStrokeCap.Round,
+                        StrokeThickness = strokeThickness,
+                    },
                 },
 
                 new LineSeries<ObservableValue, LiveChartsCore.SkiaSharpView.Drawing.Geometries.CircleGeometry>
                 {
                     Values = _averageValues,
 
-                    Stroke = new SolidColorPaint(SKColors.DarkOliveGreen, 3),
                     Fill = null,
                     GeometryStroke = null,
                     GeometryFill = new SolidColorPaint(SKColors.DarkOliveGreen),
-                    GeometrySize = 8
+                    GeometrySize = 4,
+                    Stroke = new SolidColorPaint
+                    {
+                        Color = SKColors.DarkOliveGreen,
+                        StrokeCap = SKStrokeCap.Round,
+                        StrokeThickness = strokeThickness,
+                    },
                 }
             };
-
-
 
             ///Bind to ui with cache
             var dataConnectable = LoadAndMaintainCache().Publish();
             var dataCleanUp = dataConnectable.Connect();
             _cacheData = dataConnectable.AsObservableCache();
 
-            _tracksCleanUp = _cacheData
+            var tracksCleanUp = _cacheData
                 .Connect()
                 .LimitSizeTo(1000)
                 .Transform(x => new UnaryTrackModelProxy(x))
@@ -109,96 +124,98 @@ namespace DemoClient.ServiceFacades
                 .DisposeMany()
                 .Subscribe();
 
-            ///inputobservable Subscribe input from ReactiveCommand and Convert to _trackCacheSubject
-            _inputCleanUp = _inputObservable
-                               .Select(x => new UnaryTrackModel(DateTime.Now.ToFileTime(),
-                                       DateTime.Now,
-                                       Global.Singleton.ChannelName,
-                                       x,
-                                       BeepServiceProvider.ClientTag,
-                                       BeepServiceProvider.GetServiceName()))
-                               .Subscribe(x =>
-                               {
-                                   UnaryTaskExecute(x);
-                               });
+            var inputCleanUp = _inputObservable
+                .Select(x => new UnaryTrackModel(DateTime.Now.ToFileTime(),
+                        DateTime.Now,
+                        Global.Singleton.ChannelName,
+                        x,
+                        BeepServiceProvider.ClientTag,
+                        BeepServiceProvider.GetServiceName()))
+                .Subscribe(x =>
+                {
+                    UnaryTaskExecute(x);
+                });
 
-            var minCleaner = _trackCacheObservable
-                                .WhereNotNull()
-                                .Select(t => t.AllElapsed.TotalMilliseconds)
-                                .Where(t => t > 0 && t < IgnoreCost) //ignore 0 and big number from cold start
-                                .Scan((min, next) => Math.Min(min, next))
-                                .ObserveOn(RxApp.MainThreadScheduler)
-                                .Subscribe(t =>
-                                {
-                                    MinTimeElapsed = t;
-                                });
+            var minCleaner =  _trackCacheObservable
+                .WhereNotNull()
+                .Select(t => t.AllElapsed.TotalMilliseconds)
+                .Where(t => t > 0 && t < IgnoreCost) //ignore 0 and big number from cold start
+                .Scan((min, next) => Math.Min(min, next))
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(t =>
+                {
+                    MinTimeElapsed = t;
+                });
 
             var maxCleaner = _trackCacheObservable
-                               .WhereNotNull()
-                               .Select(t => t.AllElapsed.TotalMilliseconds)
-                               .Where(t => t > 0 && t < IgnoreCost) //ignore 0 and big number from cold start
-                               .Scan((min, next) => Math.Max(min, next))
-                               .ObserveOn(RxApp.MainThreadScheduler)
-                               .Subscribe(t =>
-                               {
-                                   MaxTimeElapsed = t;
-                               });
+                .WhereNotNull()
+                .Select(t => t.AllElapsed.TotalMilliseconds)
+                .Where(t => t > 0 && t < IgnoreCost) //ignore 0 and big number from cold start
+                .Scan((min, next) => Math.Max(min, next))
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(t =>
+                {
+                    MaxTimeElapsed = t;
+                });
+
             int subscribeCount = 1;
+
             var averageCleaner = _trackCacheObservable
-                                  .WhereNotNull()
-                                  .Select(t => t.AllElapsed.TotalMilliseconds)
-                                  .Where(t => t > 0 && t < IgnoreCost) //ignore 0 and big number from cold start
-                                  .Scan(new { Sum = 0.0, Count = 0 }, (acc, next) => new { Sum = acc.Sum + next, Count = acc.Count + 1 })
-                                  .Where(acc => acc.Count > 0)
-                                  .Select(acc => acc.Sum / acc.Count)
-                                  .ObserveOn(RxApp.MainThreadScheduler)
-                                  .Subscribe(t =>
-                                  {
-                                      AverageTimeElapsed = t;
+                .WhereNotNull()
+                .Select(t => t.AllElapsed.TotalMilliseconds)
+                .Where(t => t > 0 && t < IgnoreCost)
+                .Scan(new { Sum = 0.0, Count = 0 }, (acc, next) => new { Sum = acc.Sum + next, Count = acc.Count + 1 })
+                .Where(acc => acc.Count > 0)
+                .Select(acc => acc.Sum / acc.Count)
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(t =>
+                {
+                    AverageTimeElapsed = t;
                                       
-                                  });
+                });
 
             var maxCountCleaner = _trackCacheObservable
-                               .WhereNotNull()
-                               .Select(t => t.AllElapsed.TotalMilliseconds)
-                               .Where(t => t > SlowCost) //ignore 0 and big number from cold start
-                               .Scan(0, (count, _) => count + 1)
-                               .ObserveOn(RxApp.MainThreadScheduler)
-                               .Subscribe(t =>
-                               {
-                                   MaxCount = t;
-                               });
+                .WhereNotNull()
+                .Select(t => t.AllElapsed.TotalMilliseconds)
+                .Where(t => t > SlowCost) 
+                .Scan(0, (count, _) => count + 1)
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(t =>
+                {
+                    MaxCount = t;
+                });
 
             var allCountCleaner = _trackCacheObservable
-                                  .WhereNotNull()
-                                  .DistinctUntilChanged()
-                                  .Scan(0, (count, _) => count + 1)
-                                  .ObserveOn(RxApp.MainThreadScheduler)
-                                  .Subscribe(t =>
-                                  {
-                                      AllCount = t;
-                                  });
+                .WhereNotNull()
+                .DistinctUntilChanged()
+                .Scan(0, (count, _) => count + 1)
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(t =>
+                {
+                    AllCount = t;
+                });
 
 
-            var chartCountCleaner = _trackCacheObservable
-                                    .WhereNotNull()
-                                    .Select(t => t.AllElapsed.TotalMilliseconds)
-                                    .Where(t=>t>0)
-                                    .ObserveOn(RxApp.MainThreadScheduler)
-                                    .Subscribe(t =>
-                                    {
-                                        lock (ChartSyncContext)
-                                        {
-                                            subscribeCount++;
-                                            _values.Add(new ObservableValue(t));
-                                            _averageValues.Add(new ObservableValue(AverageTimeElapsed));
-                                        }
-                                        if (_values.Count > 100)
-                                        {
-                                            _values.RemoveAt(0);
-                                            _averageValues.RemoveAt(0);
-                                        }
-                                    });
+            var chartCleaner = _trackCacheObservable
+                .WhereNotNull()
+                .Select(t => t.AllElapsed.TotalMilliseconds)
+                .Where(t=>t>0)
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(t =>
+                {
+                    lock (ChartSyncContext)
+                    {
+                        subscribeCount++;
+                        _values.Add(new ObservableValue(t));
+                        _averageValues.Add(new ObservableValue(AverageTimeElapsed));
+
+                        if (_values.Count > 100)
+                        {
+                            _values.RemoveAt(0);
+                            _averageValues.RemoveAt(0);
+                        }
+                    }
+                });
 
             StartAutoUnaryCommand = ReactiveCommand.Create<string>(
                 (t)
@@ -219,14 +236,16 @@ namespace DemoClient.ServiceFacades
             StopAutoUnaryCommand = ReactiveCommand.Create(()=> _autoInputCleanUp?.Dispose());
 
 
-            _cleanUpAll = new CompositeDisposable(_tracksCleanUp,
-                _inputCleanUp, 
+            _cleanUpAll = new CompositeDisposable(
+                tracksCleanUp,
+                inputCleanUp, 
                 dataCleanUp, 
                 averageCleaner, 
                 maxCleaner, 
                 minCleaner,
                 maxCountCleaner,
-                allCountCleaner);
+                allCountCleaner,
+                chartCleaner);
 
         }
         public ReadOnlyObservableCollection<UnaryTrackModelProxy> UnaryTracks => _unaryTracks;
@@ -346,9 +365,9 @@ namespace DemoClient.ServiceFacades
                         }
                     }
                     //caches.Clear();
-                    MaxTimeElapsed = 0;
-                    MinTimeElapsed = 0;
-                    AverageTimeElapsed = 0;
+                    //MaxTimeElapsed = 0;
+                    //MinTimeElapsed = 0;
+                    //AverageTimeElapsed = 0;
                 });
 
                 return new CompositeDisposable(cacheCleaner, clearCleaner);
@@ -374,7 +393,6 @@ namespace DemoClient.ServiceFacades
                 try
                 {
                     unaryTrackModel.SetStatus(TrackStatusType.Requesting);
-                    //_trackCacheObserver.OnNext(unaryTrackModel);
 
                     if (IsUseMutiClient)
                     {
@@ -382,24 +400,18 @@ namespace DemoClient.ServiceFacades
                     }
 
                     var responseTask = _beepServiceProvider.Beep(unaryTrackModel.Request, TimeSpan.FromMilliseconds(Timeout), ServerDelay);
-
                     unaryTrackModel.SetStatus(TrackStatusType.Proceeding);
-                    //_trackCacheObserver.OnNext(unaryTrackModel);
-
                     var response = await responseTask;
 
                     unaryTrackModel.SetResult(TrackStatusType.Done, Grpc.Core.StatusCode.OK, response);
-                    //_trackCacheSubject.OnNext(unaryTrackModel);
                 }
                 catch (Grpc.Core.RpcException gex)
                 {
                     unaryTrackModel.SetResult(TrackStatusType.Error, gex.StatusCode, gex.Message);
-                    //_trackCacheSubject.OnNext(unaryTrackModel);
                 }
                 catch (Exception ex)
                 {
                     unaryTrackModel.SetResult(TrackStatusType.Error, Grpc.Core.StatusCode.Aborted, ex.Message);
-                    //_trackCacheSubject.OnNext(unaryTrackModel);
                 }
                 finally
                 {
