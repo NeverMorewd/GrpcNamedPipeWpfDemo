@@ -2,6 +2,7 @@
 using MaterialDesignThemes.Wpf;
 using ReactiveUI;
 using System;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Windows;
 
@@ -24,7 +25,8 @@ namespace DemoClient
         }
         protected override void OnStartup(StartupEventArgs e)
         {
-            (StartupPage, InitialFlowDirection, InitialTheme) = CommandLineOptions.ParseCommandLine(e.Args);
+            #region md theme
+            //(StartupPage, InitialFlowDirection, InitialTheme) = CommandLineOptions.ParseCommandLine(e.Args);
 
             //This is an alternate way to initialize MaterialDesignInXAML if you don't use the MaterialDesignResourceDictionary in App.xaml
             //Color primaryColor = SwatchHelper.Lookup[MaterialDesignColor.DeepPurple];
@@ -48,9 +50,15 @@ namespace DemoClient
             System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("fa-Ir");
             FrameworkElement.LanguageProperty.OverrideMetadata(typeof(FrameworkElement), new FrameworkPropertyMetadata(
                         System.Windows.Markup.XmlLanguage.GetLanguage(System.Globalization.CultureInfo.CurrentCulture.IetfLanguageTag)));*/
+            #endregion
 
+            var pipeName = e.Args.FirstOrDefault();
+            if (pipeName != null)
+            {
+                Global.Singleton.ChannelName = pipeName;
+            }
             base.OnStartup(e);
-            Console.WriteLine("OnStartup");
+            Console.WriteLine($"OnStartup:{string.Join(' ', e.Args)}");
         }
     }
 }

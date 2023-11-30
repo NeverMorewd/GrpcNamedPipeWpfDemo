@@ -2,11 +2,33 @@
 using DemoServer;
 using GrpcDotNetNamedPipes;
 using Nevermore.Grpc.Ipc;
+using System.Diagnostics;
 
-Console.WriteLine("starting...");
-var server = new NamedPipeServer("53189515-EE63-427A-870D-F3D11BD96F36");
+Console.WriteLine("GrpcNamedPipeServer is starting...");
+var pipeName = Guid.NewGuid().ToString();
+var server = new NamedPipeServer(pipeName);
 BeepService.BindService(server.ServiceBinder, new BeepGrpcService());
 server.Start();
 
-// BindService is internal to Grpc.Core.Api so you'll need reflection to do this call
-Console.WriteLine("NamedPipeServer is running");
+Console.WriteLine("GrpcNamedPipeServer is running!");
+Console.WriteLine("Start client...");
+try
+{
+    var client = Process.Start("DemoClient.exe", pipeName);
+    client.EnableRaisingEvents = true;
+    client.Exited += Client_Exited;
+    Console.WriteLine($"DemoClient pid is {client.Id}!");
+}
+catch(Exception ex)
+{
+    Console.WriteLine($"Fail to start DemoClient.Please try to restart manually!");
+    Console.WriteLine(ex);
+}
+
+void Client_Exited(object? sender, EventArgs e)
+{
+    if (sender is Process process)
+    {
+        Console.WriteLine("DemoClient has exited...");
+    }
+}

@@ -8,7 +8,7 @@ namespace DemoClient.Common
 {
     public class Global : ReactiveObject,IDisposable
     {
-        private const string _DefaultChannelName = "53189515-EE63-427A-870D-F3D11BD96F36";
+        public const string _DefaultChannelName = "53189515-EE63-427A-870D-F3D11BD96F36";
         private readonly IDisposable _limitCleaner;
         private readonly IDisposable _outPutCleaner;
         private readonly SourceList<string> _outPuts;

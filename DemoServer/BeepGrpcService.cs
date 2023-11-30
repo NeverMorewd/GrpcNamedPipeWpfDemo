@@ -11,10 +11,7 @@ namespace DemoServer
     {
         private readonly int pid = Environment.ProcessId;
         private readonly string osVersion = Environment.OSVersion.ToString();
-        IObservable<string> MessageObservable;
-        readonly ConcurrentDictionary<string, BlockingCollection<string>> MessageCollectionDictionary = new ConcurrentDictionary<string, BlockingCollection<string>>();
-
-
+        private readonly ConcurrentDictionary<string, BlockingCollection<string>> MessageCollectionDictionary = new();
 
         public BeepGrpcService() 
         {
