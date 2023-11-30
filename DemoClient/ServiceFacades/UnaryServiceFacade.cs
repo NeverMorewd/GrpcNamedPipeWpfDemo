@@ -116,7 +116,7 @@ namespace DemoClient.ServiceFacades
 
             var tracksCleanUp = _cacheData
                 .Connect()
-                .LimitSizeTo(1000)
+                .LimitSizeTo(20000)
                 .Transform(x => new UnaryTrackModelProxy(x))
                 .Sort(SortExpressionComparer<UnaryTrackModelProxy>.Descending(t => t.RequestTime), SortOptimisations.None, 25)
                 .ObserveOn(RxApp.MainThreadScheduler)
@@ -209,7 +209,7 @@ namespace DemoClient.ServiceFacades
                         _values.Add(new ObservableValue(t));
                         _averageValues.Add(new ObservableValue(AverageTimeElapsed));
 
-                        if (_values.Count > 100)
+                        if (_values.Count > 20000)
                         {
                             _values.RemoveAt(0);
                             _averageValues.RemoveAt(0);

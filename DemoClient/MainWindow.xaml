@@ -191,13 +191,26 @@
                         materialDesign:ElevationAssist.Elevation="Dp6"
                         Background="White"
                         Header="https://github.com/dotnet/wpf/issues/4362"
-                        Mouse.MouseDown="GroupBox_MouseDown"
+                        Mouse.MouseUp="GroupBox_MouseDown"
                         Style="{StaticResource MaterialDesignGroupBox}">
                         <StackPanel Orientation="Vertical">
                             <CheckBox Name="TestCheckBox" Content="IsChecked" />
                             <Expander Name="TestExpander" Header="TestExpander">
                                 <TextBlock Text="Expand" />
                             </Expander>
+                        </StackPanel>
+                    </GroupBox>
+                    <GroupBox
+                        materialDesign:ElevationAssist.Elevation="Dp6"
+                        Background="White"
+                        Header="LoadDllTest"
+                        Style="{StaticResource MaterialDesignGroupBox}">
+                        <StackPanel Orientation="Vertical">
+                            <TextBox Name="DllPath" Width="500" />
+                            <Button
+                                Name="BrowseButton"
+                                Margin="10,0,0,0"
+                                Content="Browse" />
                         </StackPanel>
                     </GroupBox>
                 </StackPanel>

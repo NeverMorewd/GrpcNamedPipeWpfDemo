@@ -8,6 +8,13 @@ Console.WriteLine("GrpcNamedPipeServer is starting...");
 var pipeName = Guid.NewGuid().ToString();
 var server = new NamedPipeServer(pipeName);
 BeepService.BindService(server.ServiceBinder, new BeepGrpcService());
+server.Error += Server_Error;
+
+void Server_Error(object? sender, NamedPipeErrorEventArgs e)
+{
+    Console.WriteLine($"Server_Error:{e.Error}");
+}
+
 server.Start();
 
 Console.WriteLine("GrpcNamedPipeServer is running!");

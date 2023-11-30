@@ -87,44 +87,49 @@ namespace DemoClient
                    .DisposeWith(dispos);
 
                 this.Bind(ViewModel,
-                  vm => vm.UnaryFacade.IsUseMutiClient,
-                  vw => vw.MultiClientCheckBox.IsChecked)
-                  .DisposeWith(dispos);
+                      vm => vm.UnaryFacade.IsUseMutiClient,
+                      vw => vw.MultiClientCheckBox.IsChecked)
+                      .DisposeWith(dispos);
 
                 this.Bind(ViewModel,
-                  vm => vm.UnaryFacade.MinTimeElapsed,
-                  vw => vw.TroughCost.Content)
-                  .DisposeWith(dispos);
+                      vm => vm.UnaryFacade.MinTimeElapsed,
+                      vw => vw.TroughCost.Content)
+                      .DisposeWith(dispos);
 
                 this.Bind(ViewModel,
-                 vm => vm.UnaryFacade.MaxTimeElapsed,
-                 vw => vw.PeakCost.Content)
-                 .DisposeWith(dispos);
+                     vm => vm.UnaryFacade.MaxTimeElapsed,
+                     vw => vw.PeakCost.Content)
+                     .DisposeWith(dispos);
 
                 this.Bind(ViewModel,
-                 vm => vm.UnaryFacade.AverageTimeElapsed,
-                 vw => vw.AverageCost.Content)
-                 .DisposeWith(dispos);
+                     vm => vm.UnaryFacade.AverageTimeElapsed,
+                     vw => vw.AverageCost.Content)
+                     .DisposeWith(dispos);
 
                 this.Bind(ViewModel,
-                vm => vm.UnaryFacade.MaxCount,
-                vw => vw.MaxCount.Content)
-                .DisposeWith(dispos);
+                    vm => vm.UnaryFacade.MaxCount,
+                    vw => vw.MaxCount.Content)
+                    .DisposeWith(dispos);
 
                 this.OneWayBind(ViewModel,
-                vm => vm.UnaryFacade.CostSeries,
-                vw => vw.CostChart.Series)
-                .DisposeWith(dispos);
+                    vm => vm.UnaryFacade.CostSeries,
+                    vw => vw.CostChart.Series)
+                    .DisposeWith(dispos);
 
                 this.OneWayBind(ViewModel,
-                vm => vm.UnaryFacade.ChartSyncContext,
-                vw => vw.CostChart.SyncContext)
-                .DisposeWith(dispos);
+                    vm => vm.UnaryFacade.ChartSyncContext,
+                    vw => vw.CostChart.SyncContext)
+                    .DisposeWith(dispos);
 
                 this.Bind(ViewModel,
-               vm => vm.UnaryFacade.AllCount,
-               vw => vw.AllCount.Content)
-               .DisposeWith(dispos);
+                   vm => vm.UnaryFacade.AllCount,
+                   vw => vw.AllCount.Content)
+                   .DisposeWith(dispos);
+
+                //this.Bind(ViewModel,
+                //   vm => vm.TestFacade.DllPath,
+                //   vw => vw.TestFacade.BrowseCommand)
+                //   .DisposeWith(dispos);
 
 
 
