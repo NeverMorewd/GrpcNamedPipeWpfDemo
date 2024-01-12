@@ -7,8 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GrpcDotNetNamedPipes", "Grp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GrpcDotNetNamedPipes.Tests", "GrpcDotNetNamedPipes.Tests\GrpcDotNetNamedPipes.Tests.csproj", "{D7566E69-DA28-4997-9C4F-E0C0F8DD3F13}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GrpcDotNetNamedPipes.PerfTests", "GrpcDotNetNamedPipes.PerfTests\GrpcDotNetNamedPipes.PerfTests.csproj", "{688ADBBA-FEDD-48C4-A05C-BB1E1BF8DB84}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DemoClient", "DemoClient\DemoClient.csproj", "{0391C2A5-276A-4B93-B8F5-696858B86876}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DemoServer", "DemoServer\DemoServer.csproj", "{40AD69FE-1955-42A8-83DA-89AF2033ED4A}"
@@ -29,10 +27,6 @@ Global
 		{D7566E69-DA28-4997-9C4F-E0C0F8DD3F13}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D7566E69-DA28-4997-9C4F-E0C0F8DD3F13}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D7566E69-DA28-4997-9C4F-E0C0F8DD3F13}.Release|Any CPU.Build.0 = Release|Any CPU
-		{688ADBBA-FEDD-48C4-A05C-BB1E1BF8DB84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{688ADBBA-FEDD-48C4-A05C-BB1E1BF8DB84}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{688ADBBA-FEDD-48C4-A05C-BB1E1BF8DB84}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{688ADBBA-FEDD-48C4-A05C-BB1E1BF8DB84}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0391C2A5-276A-4B93-B8F5-696858B86876}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0391C2A5-276A-4B93-B8F5-696858B86876}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0391C2A5-276A-4B93-B8F5-696858B86876}.Release|Any CPU.ActiveCfg = Release|Any CPU
