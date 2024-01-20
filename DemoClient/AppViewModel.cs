@@ -13,10 +13,12 @@ namespace DemoClient
     {
         private readonly IDisposable? _disposable;
         private readonly BeepServiceProvider _beepProvider;
+        private readonly RuntimeServiceProvider _runtimeProvider;
 
         public AppViewModel()
         {
             _beepProvider = new BeepServiceProvider(Global.Singleton.ChannelName);
+            _runtimeProvider = new RuntimeServiceProvider(Global.Singleton.ChannelName);
 
             #region unary
             UnaryOnceCommand = ReactiveCommand.CreateFromTask<string, string>(message => Task.FromResult(message));
@@ -75,12 +77,29 @@ namespace DemoClient
                 ConverseStreamingClearCommand);
 
             #endregion
+
+            RuntimeUnaryOnceCommand = ReactiveCommand.CreateFromTask<string, string>(message =>
+            {
+                return Task.FromResult(message);
+            });
+
+            RuntimeUnaryClearCommand = ReactiveCommand.Create(() =>
+            {
+                Console.WriteLine(nameof(UnaryClearCommand));
+            });
+            RuntimeUnaryFacade = new UnaryServiceFacade(_runtimeProvider, RuntimeUnaryOnceCommand, RuntimeUnaryClearCommand);
         }
 
         public UnaryServiceFacade UnaryFacade 
         { 
             get; 
             private set; 
+        }
+
+        public UnaryServiceFacade RuntimeUnaryFacade
+        {
+            get;
+            private set;
         }
         public ClientStreamingServiceFacade ClientStreamingFacade 
         { 
@@ -132,6 +151,16 @@ namespace DemoClient
             }
         }
         public ReactiveCommand<string, string> UnaryOnceCommand
+        {
+            get;
+            set;
+        }
+        public ReactiveCommand<string, string> RuntimeUnaryOnceCommand
+        {
+            get;
+            set;
+        }
+        public ReactiveCommand<Unit, Unit> RuntimeUnaryClearCommand
         {
             get;
             set;

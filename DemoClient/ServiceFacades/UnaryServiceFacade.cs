@@ -3,6 +3,7 @@ using DemoClient.gRPC;
 using DemoClient.Models;
 using DynamicData;
 using DynamicData.Binding;
+using Grpc.Core;
 using LiveChartsCore;
 using LiveChartsCore.Defaults;
 using LiveChartsCore.Drawing;
@@ -38,7 +39,7 @@ namespace DemoClient.ServiceFacades
         private readonly ReadOnlyObservableCollection<UnaryTrackModelProxy> _unaryTracks;
         private readonly IObserver<UnaryTrackModel> _trackCacheObserver;
         private readonly IObservable<UnaryTrackModel> _trackCacheObservable;
-        private BeepServiceProvider _beepServiceProvider;
+        private IBeepServiceProvider _beepServiceProvider;
         private readonly IObservableCache<UnaryTrackModel, long> _cacheData;
         private const int IgnoreCost = 200;
         private const int SlowCost = 50;
@@ -53,7 +54,7 @@ namespace DemoClient.ServiceFacades
         /// <param name="inputObservable">input reactive commmand</param>
         /// <param name="clearObservable">clear reactive commmand</param>
         public UnaryServiceFacade(
-            BeepServiceProvider beepServiceProvider, 
+            IBeepServiceProvider beepServiceProvider, 
             IObservable<string> inputObservable,
             IObservable<Unit> clearObservable)
         {

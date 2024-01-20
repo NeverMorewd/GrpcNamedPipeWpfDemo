@@ -215,6 +215,95 @@ namespace DemoClient
                     v => v.ConverseRequestingClearButton)
                    .DisposeWith(dispos);
 
+
+                #region runtimeunary
+
+                this.Bind(ViewModel,
+                   vm => vm.RuntimeUnaryFacade.IsLongRunnig,
+                   vw => vw.TaskOption.IsChecked)
+                   .DisposeWith(dispos);
+
+                this.Bind(ViewModel,
+                    vm => vm.RuntimeUnaryFacade.Timeout,
+                    vw => vw.TimeoutTextBox.Text)
+                    .DisposeWith(dispos);
+
+                this.Bind(ViewModel,
+                   vm => vm.RuntimeUnaryFacade.InternalDelay,
+                   vw => vw.InternalTextBox.Text)
+                   .DisposeWith(dispos);
+
+                this.Bind(ViewModel,
+                    vm => vm.RuntimeUnaryFacade.ServerDelay,
+                    vw => vw.ServerDelayTextBox.Text)
+                    .DisposeWith(dispos);
+
+                this.Bind(ViewModel,
+                      vm => vm.RuntimeUnaryFacade.IsUseMutiClient,
+                      vw => vw.RuntimeTestMultiClientCheckBox.IsChecked)
+                      .DisposeWith(dispos);
+
+                this.Bind(ViewModel,
+                      vm => vm.RuntimeUnaryFacade.MinTimeElapsed,
+                      vw => vw.RuntimeTestTroughCost.Content)
+                      .DisposeWith(dispos);
+
+                this.Bind(ViewModel,
+                     vm => vm.RuntimeUnaryFacade.MaxTimeElapsed,
+                     vw => vw.RuntimeTestPeakCost.Content)
+                     .DisposeWith(dispos);
+
+                this.Bind(ViewModel,
+                     vm => vm.RuntimeUnaryFacade.AverageTimeElapsed,
+                     vw => vw.RuntimeTestAverageCost.Content)
+                     .DisposeWith(dispos);
+
+                this.Bind(ViewModel,
+                    vm => vm.RuntimeUnaryFacade.MaxCount,
+                    vw => vw.RuntimeTestMaxCount.Content)
+                    .DisposeWith(dispos);
+
+                this.OneWayBind(ViewModel,
+                    vm => vm.RuntimeUnaryFacade.CostSeries,
+                    vw => vw.RuntimeTestCostChart.Series)
+                    .DisposeWith(dispos);
+
+                this.OneWayBind(ViewModel,
+                    vm => vm.RuntimeUnaryFacade.ChartSyncContext,
+                    vw => vw.RuntimeTestCostChart.SyncContext)
+                    .DisposeWith(dispos);
+
+                this.Bind(ViewModel,
+                   vm => vm.RuntimeUnaryFacade.AllCount,
+                   vw => vw.RuntimeTestAllCount.Content)
+                   .DisposeWith(dispos);
+
+                this.OneWayBind(ViewModel,
+                    vm => vm.RuntimeUnaryFacade.UnaryTracks,
+                    vw => vw.RuntimeTestUnaryTracks.ItemsSource)
+                    .DisposeWith(dispos);
+
+                this.BindCommand(ViewModel,
+                    vm => vm.RuntimeUnaryOnceCommand,
+                    v => v.RuntimeTestBeepUnaryButton,
+                    vm => vm.UnaryMessage)
+                    .DisposeWith(dispos);
+
+                this.BindCommand(ViewModel,
+                   vm => vm.RuntimeUnaryFacade.StartAutoUnaryCommand,
+                   v => v.RuntimeTestStartAutoUnary,
+                   vm => vm.UnaryMessage,
+                   nameof(RuntimeTestStartAutoUnary.Checked))
+                   .DisposeWith(dispos);
+
+                this.BindCommand(ViewModel,
+                    vm => vm.RuntimeUnaryFacade.StopAutoUnaryCommand,
+                    v => v.RuntimeTestStartAutoUnary,
+                    nameof(RuntimeTestStartAutoUnary.Unchecked))
+                    .DisposeWith(dispos);
+
+                #endregion
+
             });
 
             this.WhenAnyValue(x => x.ViewModel.IsChecked)
@@ -222,6 +311,9 @@ namespace DemoClient
             {
                 Console.WriteLine($"IsChecked changed to: {newValue}");
             });
+
+
+
 
 
 

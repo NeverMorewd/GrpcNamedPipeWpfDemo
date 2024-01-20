@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DemoClient.gRPC
 {
-    public class BeepServiceProvider
+    public class BeepServiceProvider : BaseServiceProvider<BeepService.BeepServiceClient>
     {
         private readonly BeepService.BeepServiceClient _beepService;
         public static readonly string ClientTag = $"{Environment.ProcessId}-{Environment.CurrentManagedThreadId}";
@@ -17,7 +17,7 @@ namespace DemoClient.gRPC
         private readonly string _channelName;
         private readonly string _clientInfo;
 
-        public BeepServiceProvider(string aChannelName,[CallerMemberName]string aClientInfo = "")
+        public BeepServiceProvider(string aChannelName, [CallerMemberName] string aClientInfo = "")
         {
             if (string.IsNullOrEmpty(aChannelName))
             {
@@ -28,11 +28,11 @@ namespace DemoClient.gRPC
             _channel = new NamedPipeChannel(".", _channelName);
             _beepService = new BeepService.BeepServiceClient(_channel);
         }
-        public BeepServiceProvider Clone()
+        public override BeepServiceProvider Clone()
         {
             return new BeepServiceProvider(_channelName, _clientInfo);
         }
-        public async Task<string> Beep(string aContent,
+        public override async Task<string> Beep(string aContent,
             TimeSpan timeout,
             int aReturnDelay,
             CancellationToken cancellationToken = default)
@@ -41,9 +41,9 @@ namespace DemoClient.gRPC
             {
                 throw new ArgumentOutOfRangeException("timeout can not exceed 1 day!");
             }
-            CallOptions callOptions = 
+            CallOptions callOptions =
                         new
-                        (   
+                        (
                             deadline: DateTime.Now.AddMilliseconds(timeout.TotalMilliseconds).ToUniversalTime(),
                             cancellationToken: cancellationToken
                         );
@@ -62,15 +62,15 @@ namespace DemoClient.gRPC
 
 
         [Time]
-        public AsyncClientStreamingCall<Beep,Beep> BeepClientStreaming(CallOptions callOptions)
+        public AsyncClientStreamingCall<Beep, Beep> BeepClientStreaming(CallOptions callOptions)
         {
             return _beepService.BeepStreamingFromClient(callOptions);
         }
 
         [Time]
-        public AsyncServerStreamingCall<Beep> BeepServerStreaming(Beep beep,CallOptions callOptions)
+        public AsyncServerStreamingCall<Beep> BeepServerStreaming(Beep beep, CallOptions callOptions)
         {
-            return _beepService.BeepStreamingFromServer(beep,callOptions);
+            return _beepService.BeepStreamingFromServer(beep, callOptions);
         }
 
 
@@ -105,7 +105,7 @@ namespace DemoClient.gRPC
                     Delay = aReturnDelay
                 }
             };
-        }  
+        }
 
         public static string GetServiceName()
         {
