@@ -1,5 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using DemoServer;
+using Google.Protobuf;
 using GrpcDotNetNamedPipes;
 using Nevermore.Grpc.Ipc;
 using System.Diagnostics;
@@ -12,7 +13,17 @@ server.Error += Server_Error;
 
 void Server_Error(object? sender, NamedPipeErrorEventArgs e)
 {
-    Console.WriteLine($"Server_Error:{e.Error}");
+    if (e.Error is ObjectDisposedException)
+    {
+        //ignore
+        return;
+    }
+    if (e.Error is InvalidProtocolBufferException rawDataException)
+    {
+        Console.WriteLine($"{nameof(InvalidProtocolBufferException)}:{rawDataException.Message}");
+        return;
+    }
+    Console.WriteLine($"NamedPipeServerError:{e.Error}");
 }
 
 server.Start();
