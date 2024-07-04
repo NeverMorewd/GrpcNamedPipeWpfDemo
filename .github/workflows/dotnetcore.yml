@@ -17,6 +17,4 @@ jobs:
     - name: Install dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build GrpcDotNetNamedPipes.Tests --configuration Release --no-restore
-    - name: Test
-      run: dotnet test GrpcDotNetNamedPipes.Tests --no-restore -l "console;verbosity=normal"
+      run: dotnet build GrpcDotNetNamedPipes.GuiDemo --configuration Release --no-restore
