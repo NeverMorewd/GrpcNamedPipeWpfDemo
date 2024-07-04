@@ -16,5 +16,7 @@ jobs:
         dotnet-version: 8.0.x
     - name: Install dependencies
       run: dotnet restore
-    - name: Build
-      run: dotnet build GrpcDotNetNamedPipes.GuiDemo --configuration Release --no-restore
+    - name: Build DemoServer
+      run: dotnet build DemoServer --configuration Release --no-restore
+    - name: Build DemoClient
+      run: dotnet build DemoClient --configuration Release --no-restore
