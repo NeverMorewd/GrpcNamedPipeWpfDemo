@@ -1,6 +1,5 @@
 ﻿using DemoClient.Common;
 using MaterialDesignThemes.Wpf;
-using ReactiveUI;
 using System;
 using System.Linq;
 using System.Reactive.Linq;

@@ -1,13 +1,10 @@
 ﻿using Grpc.Core;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using Polly;
 using Grpc.Core.Interceptors;
+using Polly;
+using System;
+using System.Net;
+using System.Net.Sockets;
+using System.Threading.Tasks;
 
 namespace DemoClient.gRPC
 {

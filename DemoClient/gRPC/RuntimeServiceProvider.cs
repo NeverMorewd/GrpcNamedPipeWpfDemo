@@ -1,13 +1,11 @@
 ﻿using Grpc.Core;
 using GrpcDotNetNamedPipes;
+using MethodTimer;
 using Rpa.Core.Runtimehost;
 using System;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using System.Threading;
-using MethodTimer;
-using Nevermore.Grpc.Ipc;
-using DemoClient.Common;
+using System.Threading.Tasks;
 
 namespace DemoClient.gRPC
 {
