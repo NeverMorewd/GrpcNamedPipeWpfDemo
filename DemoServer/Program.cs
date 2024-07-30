@@ -47,6 +47,6 @@ void Client_Exited(object? sender, EventArgs e)
 {
     if (sender is Process process)
     {
-        Console.WriteLine("DemoClient has exited...");
+        Console.WriteLine($"DemoClient has exited...{process.ExitCode}");
     }
 }

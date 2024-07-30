@@ -3,7 +3,6 @@ using DemoClient.gRPC;
 using DemoClient.Models;
 using DynamicData;
 using DynamicData.Binding;
-using Grpc.Core;
 using LiveChartsCore;
 using LiveChartsCore.Defaults;
 using LiveChartsCore.Drawing;
@@ -43,6 +42,7 @@ namespace DemoClient.ServiceFacades
         private readonly IObservableCache<UnaryTrackModel, long> _cacheData;
         private const int IgnoreCost = 200;
         private const int SlowCost = 50;
+        private const int MaxItems = 100;
         private readonly ObservableCollection<ObservableValue> _values;
         private readonly ObservableCollection<ObservableValue> _averageValues;
         private readonly LvcColor[] colors = ColorPalletes.FluentDesign;
@@ -117,7 +117,7 @@ namespace DemoClient.ServiceFacades
 
             var tracksCleanUp = _cacheData
                 .Connect()
-                .LimitSizeTo(20000)
+                .LimitSizeTo(MaxItems)
                 .Transform(x => new UnaryTrackModelProxy(x))
                 .Sort(SortExpressionComparer<UnaryTrackModelProxy>.Descending(t => t.RequestTime), SortOptimisations.None, 25)
                 .ObserveOn(RxApp.MainThreadScheduler)
@@ -210,7 +210,7 @@ namespace DemoClient.ServiceFacades
                         _values.Add(new ObservableValue(t));
                         _averageValues.Add(new ObservableValue(AverageTimeElapsed));
 
-                        if (_values.Count > 20000)
+                        if (_values.Count > MaxItems)
                         {
                             _values.RemoveAt(0);
                             _averageValues.RemoveAt(0);
@@ -218,6 +218,18 @@ namespace DemoClient.ServiceFacades
                     }
                 });
 
+            //StartAutoUnaryCommand = ReactiveCommand.CreateFromObservable<string, UnaryTrackModel>((t) => {
+            //    return Observable
+            //            .Interval(TimeSpan.FromMilliseconds(InternalDelay))
+            //            .Select(x => new UnaryTrackModel(DateTime.Now.ToFileTime(),
+            //                   DateTime.Now,
+            //                   Global.Singleton.ChannelName,
+            //                   $"{t}-{x}",
+            //                   BeepServiceProvider.ClientTag,
+            //                   BeepServiceProvider.GetServiceName()));
+            //        //.Subscribe(x => UnaryTaskExecute(x));
+            //});
+            //_autoInputCleanUp = StartAutoUnaryCommand.Subscribe(x => UnaryTaskExecute(x));
             StartAutoUnaryCommand = ReactiveCommand.Create<string>(
                 (t)
                 =>
@@ -333,6 +345,11 @@ namespace DemoClient.ServiceFacades
             get;
             set;
         }
+        //public ReactiveCommand<string, UnaryTrackModel> StartAutoUnaryCommand
+        //{
+        //    get;
+        //    set;
+        //}
         public ReactiveCommand<Unit, Unit> StopAutoUnaryCommand
         {
             get;
