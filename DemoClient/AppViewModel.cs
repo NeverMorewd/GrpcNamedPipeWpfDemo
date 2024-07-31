@@ -13,16 +13,14 @@ namespace DemoClient
     {
         private readonly IDisposable? _disposable;
         private readonly BeepServiceProvider _beepProvider;
-        private readonly RuntimeServiceProvider _runtimeProvider;
 
         public AppViewModel()
         {
             _beepProvider = new BeepServiceProvider(Global.Singleton.ChannelName);
-            _runtimeProvider = new RuntimeServiceProvider(Global.Singleton.ChannelName);
 
             #region unary
             UnaryOnceCommand = ReactiveCommand.CreateFromTask<string, string>(message => Task.FromResult(message));
-            UnaryClearCommand = ReactiveCommand.Create(()=> 
+            UnaryClearCommand = ReactiveCommand.Create(() =>
             {
                 Console.WriteLine(nameof(UnaryClearCommand));
             });
@@ -51,7 +49,7 @@ namespace DemoClient
             StartClientStreamingCommand = ReactiveCommand.CreateFromTask(() => Task.FromResult(nameof(StartClientStreamingCommand)));
             StopClientStreamingCommand = ReactiveCommand.CreateFromTask(() => Task.FromResult(nameof(StopClientStreamingCommand)));
             ClientStreamingClearCommand = ReactiveCommand.CreateFromTask(() => Task.Delay(0));
-            
+
             ClientStreamingFacade = new ClientStreamingServiceFacade(_beepProvider,
                 PushOnceCommand,
                 StartClientStreamingCommand,
@@ -75,20 +73,10 @@ namespace DemoClient
                 StartConverseStreamingCommand,
                 StopConverseStreamingCommand,
                 ConverseStreamingClearCommand);
+        }
 
             #endregion
 
-            RuntimeUnaryOnceCommand = ReactiveCommand.CreateFromTask<string, string>(message =>
-            {
-                return Task.FromResult(message);
-            });
-
-            RuntimeUnaryClearCommand = ReactiveCommand.Create(() =>
-            {
-                Console.WriteLine(nameof(UnaryClearCommand));
-            });
-            RuntimeUnaryFacade = new UnaryServiceFacade(_runtimeProvider, RuntimeUnaryOnceCommand, RuntimeUnaryClearCommand);
-        }
 
         public UnaryServiceFacade UnaryFacade 
         { 
@@ -151,16 +139,6 @@ namespace DemoClient
             }
         }
         public ReactiveCommand<string, string> UnaryOnceCommand
-        {
-            get;
-            set;
-        }
-        public ReactiveCommand<string, string> RuntimeUnaryOnceCommand
-        {
-            get;
-            set;
-        }
-        public ReactiveCommand<Unit, Unit> RuntimeUnaryClearCommand
         {
             get;
             set;

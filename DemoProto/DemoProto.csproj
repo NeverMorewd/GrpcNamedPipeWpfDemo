@@ -8,12 +8,10 @@
 
   <ItemGroup>
     <None Remove="beep.proto" />
-    <None Remove="runtime_service.proto" />
   </ItemGroup>
 
   <ItemGroup>
     <Protobuf Include="beep.proto" />
-    <Protobuf Include="runtime_service.proto" />
   </ItemGroup>
 
   <ItemGroup>
